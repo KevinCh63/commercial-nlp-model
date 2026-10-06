@@ -205,6 +205,12 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Modelo generado localmente por el entrenamiento
+custom_ner_model/
+
+# Configuración local del IDE
+.idea/
+
 # Ruff stuff:
 .ruff_cache/
 
