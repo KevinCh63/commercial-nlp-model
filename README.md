@@ -36,6 +36,17 @@ resultado = interpretar_texto("Pagué 10 dólares al proveedor")
 print(serializar_resultado(resultado))
 ```
 
+Para recibir una frase compuesta con operaciones y relaciones explícitas:
+
+```python
+from interpretacion import interpretar_operaciones_con_relaciones
+
+resultado = interpretar_operaciones_con_relaciones(
+    "Compré mercadería por 100 dólares y aboné 30 dólares de esa compra"
+)
+print(serializar_resultado(resultado))
+```
+
 ## Contrato de salida
 
 Todos los resultados incluyen los campos principales:
@@ -69,34 +80,47 @@ La salida conserva además las entidades NER y dependencias para depuración.
 puede consumir posteriormente un backend Spring Boot sin una integración
 ficticia ni un servidor HTTP adicional.
 
+`interpretar_operaciones_con_relaciones` devuelve `texto`, `estado`,
+`operaciones`, `relaciones`, `advertencias` y `ambiguedades`. Cada operación
+conserva los campos actuales y añade un `id` local a la respuesta, además de
+`campos`, que anota para cada dato su valor, evidencia, origen y estado:
+`IDENTIFICADO`, `INFERIDO`, `AUSENTE`, `NO_INTERPRETADO` o `AMBIGUO`. Las
+relaciones conservan índices compatibles y agregan referencias por ID. El
+metadato del precio incluye `ambito`: `UNITARIO`, `TOTAL`, `DESCONOCIDO` o
+`NO_ESPECIFICADO`; si la frase contiene cantidad e importe sin especificar el
+alcance, el contrato conserva el importe y marca la ambigüedad. Una
+referencia ambigua se representa con destino `null`; no se interpreta como una
+relación confirmada. Los importes originales nunca se redistribuyen.
+
 ## Arquitectura
 
-- `interpretacion.py`: carga del modelo, análisis lingüístico, normalización de acciones, extracción de roles, validación y serialización.
+- `interpretacion.py`: carga del modelo, análisis lingüístico, normalización de acciones, extracción de roles, contrato estructurado, relaciones, validación y serialización.
 - `entrenamiento.py`: datos anotados, validación de offsets, entrenamiento, guardado, recarga y metadata reproducible.
-- `pruebas.py`: evaluación exacta de NER, evaluación semántica y regresiones críticas.
+- `pruebas.py`: evaluación de NER, semántica, operaciones múltiples, relaciones, contrato y conjunto adversarial independiente.
 - `custom_ner_model/proyecto_metadata.json`: fecha, parámetros, etiquetas y huella SHA-256 de los datos usados para entrenar.
 
 El NER propone entidades; las reglas semánticas posteriores corrigen estructuras
 conocidas como `7 botellas de agua`, normalizan `adquirió` a `comprar` y
 distinguen una contraparte (`al proveedor`) de un concepto de gasto.
 
-## Resultados actuales
+## Resultados de la última validación
 
-Con el modelo reentrenado en los datos actuales:
-
-- NER de entrenamiento: `45/45`.
 - NER de generalización: `27/27`.
-- Pruebas semánticas: `18/18`.
+- Entidades adicionales: `5/5`.
+- Semántica: `29/29`.
+- Operaciones múltiples: `12/12`.
+- Relaciones: `7/7`.
+- Contrato: `8/8`.
+- Evaluación adversarial independiente: `22/22`, con resultados por categoría en `pruebas.py`.
 
-Estas métricas proceden de los comandos anteriores y deben volver a medirse
-después de modificar los datos o la configuración de entrenamiento. El
-conjunto sigue siendo pequeño; conviene ampliarlo con ejemplos reales antes de
-considerar las métricas concluyentes.
+La evaluación independiente es pequeña y usa un conjunto de reglas lingüísticas
+acotado; sus porcentajes no deben interpretarse como una estimación de
+rendimiento en producción.
 
 ## Limitaciones y evolución
 
-Todavía no se extraen todas las posibles contrapartes ni se separan varias
-operaciones en una sola frase. Los errores ortográficos y la confianza no se
-resuelven con una puntuación arbitraria. La siguiente evolución recomendada es
-ampliar un conjunto de evaluación independiente y añadir pruebas de frases
-ambiguas y de múltiples operaciones antes de exponer la interfaz a Spring Boot.
+La resolución de referencias es deliberadamente acotada: reconoce algunas
+referencias textuales a compras y abstiene el enlace si hay más de un destino
+posible. No resuelve deudas externas, no calcula saldos ni interpreta errores
+ortográficos mediante una puntuación arbitraria. Las posiciones de evidencia
+son relativas al segmento de la operación, no a la frase completa.
