@@ -1,0 +1,176 @@
+{
+  "vigente": {
+    "NER": {
+      "aprobadas": 27,
+      "total": 27,
+      "error": null
+    },
+    "NER independiente": {
+      "aprobadas": 3,
+      "total": 15,
+      "error": null
+    },
+    "validación de datos": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "interfaz independiente": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "entidades": {
+      "aprobadas": 5,
+      "total": 5,
+      "error": null
+    },
+    "semántica": {
+      "aprobadas": 29,
+      "total": 29,
+      "error": null
+    },
+    "operaciones múltiples": {
+      "aprobadas": 12,
+      "total": 12,
+      "error": null
+    },
+    "relaciones": {
+      "aprobadas": 7,
+      "total": 7,
+      "error": null
+    },
+    "contrato": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "adversarial": {
+      "aprobadas": 22,
+      "total": 22,
+      "error": null
+    },
+    "fase 2": {
+      "aprobadas": 11,
+      "total": 11,
+      "error": null
+    },
+    "fase 4": {
+      "aprobadas": 17,
+      "total": 17,
+      "error": null
+    },
+    "endurecimiento": {
+      "aprobadas": 37,
+      "total": 37,
+      "error": null
+    },
+    "admisión": {
+      "aprobadas": 26,
+      "total": 26,
+      "error": null
+    },
+    "matriz modalidad": {
+      "aprobadas": 10,
+      "total": 10,
+      "error": null
+    },
+    "relaciones/evidencia": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "segmentación NER segura": {
+      "aprobadas": 4,
+      "total": 4,
+      "error": null
+    }
+  },
+  "candidata_temporal": {
+    "NER": {
+      "aprobadas": 27,
+      "total": 27,
+      "error": null
+    },
+    "NER independiente": {
+      "aprobadas": 5,
+      "total": 15,
+      "error": null
+    },
+    "validación de datos": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "interfaz independiente": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "entidades": {
+      "aprobadas": 5,
+      "total": 5,
+      "error": null
+    },
+    "semántica": {
+      "aprobadas": 29,
+      "total": 29,
+      "error": null
+    },
+    "operaciones múltiples": {
+      "aprobadas": 12,
+      "total": 12,
+      "error": null
+    },
+    "relaciones": {
+      "aprobadas": 3,
+      "total": 7,
+      "error": null
+    },
+    "contrato": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "adversarial": {
+      "aprobadas": 20,
+      "total": 22,
+      "error": null
+    },
+    "fase 2": {
+      "aprobadas": 9,
+      "total": 11,
+      "error": null
+    },
+    "fase 4": {
+      "aprobadas": 15,
+      "total": 17,
+      "error": null
+    },
+    "endurecimiento": {
+      "aprobadas": 37,
+      "total": 37,
+      "error": null
+    },
+    "admisión": {
+      "aprobadas": 26,
+      "total": 26,
+      "error": null
+    },
+    "matriz modalidad": {
+      "aprobadas": 7,
+      "total": 10,
+      "error": null
+    },
+    "relaciones/evidencia": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "segmentación NER segura": {
+      "aprobadas": 3,
+      "total": 4,
+      "error": null
+    }
+  }
+}
