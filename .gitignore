@@ -207,6 +207,8 @@ tempCodeRunnerFile.py
 
 # Modelo generado localmente por el entrenamiento
 custom_ner_model/
+.custom_ner_model.*
+resultados_ner/candidata_temporal_*/
 
 # Configuración local del IDE
 .idea/
