@@ -48,6 +48,68 @@ PRUEBAS_NUEVAS = [
 ]
 
 
+# Conjunto externo a train_data: ejemplos nuevos anotados para medir
+# generalización real. No se usa para entrenar ni se comparte con los fixtures
+# históricos; las frases se auditan contra el entrenamiento antes de entrenar.
+PRUEBAS_NER_INDEPENDIENTE = [
+    _crear_prueba("Por 37 dólares recibieron ocho sacos de quinua", "COMPUESTA", [("37 dólares", "PRICE"), ("ocho sacos", "QUANTITY"), ("quinua", "PRODUCT")]),
+    _crear_prueba("El municipio desembolsó 642 dólares para el mantenimiento vial", "CONCEPTOS", [("642 dólares", "PRICE"), ("mantenimiento vial", "CONCEPT")]),
+    _crear_prueba("Ayer vendí, sin intermediarios, once bidones de aceite vegetal por 48 euros", "VARIACION", [("once bidones", "QUANTITY"), ("aceite vegetal", "PRODUCT"), ("48 euros", "PRICE")]),
+    _crear_prueba("¿Cuánto pagó Rosa por tres metros de cable? 26 dólares", "ORDEN", [("tres metros", "QUANTITY"), ("cable", "PRODUCT"), ("26 dólares", "PRICE")]),
+    _crear_prueba("Recibimos $58 por las canastas artesanales", "MONEDA", [("$58", "PRICE"), ("canastas artesanales", "PRODUCT")]),
+    _crear_prueba("Con 72 euros compraron las láminas galvanizadas", "ORDEN", [("72 euros", "PRICE"), ("láminas galvanizadas", "PRODUCT")]),
+    _crear_prueba("Nueve kilos de cacao se colocaron a 33 dólares", "PASIVA", [("Nueve kilos", "QUANTITY"), ("cacao", "PRODUCT"), ("33 dólares", "PRICE")]),
+    _crear_prueba("Para reparar el techo, gastamos 215 dólares", "CONCEPTOS", [("reparar el techo", "CONCEPT"), ("215 dólares", "PRICE")]),
+    _crear_prueba("El proveedor facturó 19,75 dólares por dos frascos de esencia", "DECIMALES", [("19,75 dólares", "PRICE"), ("dos frascos", "QUANTITY"), ("esencia", "PRODUCT")]),
+    _crear_prueba("Se pagaron 84 pesos por el transporte escolar", "MONEDA", [("84 pesos", "PRICE"), ("transporte escolar", "CONCEPT")]),
+    _crear_prueba("La cooperativa vendió mallas y redes por 1.250 dólares", "CANTIDAD", [("mallas", "PRODUCT"), ("redes", "PRODUCT"), ("1.250 dólares", "PRICE")]),
+    _crear_prueba("Entregué tres docenas de empanadas al puesto por 60 dólares", "CANTIDAD", [("tres docenas", "QUANTITY"), ("empanadas", "PRODUCT"), ("60 dólares", "PRICE")]),
+    _crear_prueba("Con €22 compró 1.5 kg de nuez pecana", "FORMATOS", [("€22", "PRICE"), ("1.5 kg", "QUANTITY"), ("nuez pecana", "PRODUCT")]),
+    _crear_prueba("Factura de repuestos: 39 USD, cancelados hoy", "CONCEPTOS", [("repuestos", "CONCEPT"), ("39 USD", "PRICE")]),
+    _crear_prueba("Vendí tres cajas de azulejos por un total de 125 dólares", "ALCANCE", [("tres cajas", "QUANTITY"), ("azulejos", "PRODUCT"), ("125 dólares", "PRICE")]),
+]
+
+
+# Conjunto de desarrollo: puede guiar iteraciones de entrenamiento, pero no se
+# incorpora a train_data ni se confunde con el conjunto independiente histórico.
+PRUEBAS_NER_VALIDACION = [
+    _crear_prueba("Con 46 euros adquirieron cinco rollos de papel reciclado", "DESARROLLO", [("46 euros", "PRICE"), ("cinco rollos", "QUANTITY"), ("papel reciclado", "PRODUCT")]),
+    _crear_prueba("A la caja ingresaron US$ 89 por la venta de panela", "DESARROLLO", [("US$ 89", "PRICE"), ("panela", "PRODUCT")]),
+    _crear_prueba("Se invirtieron 315 dólares en la refacción del local", "DESARROLLO", [("315 dólares", "PRICE"), ("refacción del local", "CONCEPT")]),
+    _crear_prueba("Tres bidones de cloro costaron 17,60 euros", "DESARROLLO", [("Tres bidones", "QUANTITY"), ("cloro", "PRODUCT"), ("17,60 euros", "PRICE")]),
+    _crear_prueba("El comercio recibió 120 pesos por quince sacos de arroz", "DESARROLLO", [("120 pesos", "PRICE"), ("quince sacos", "QUANTITY"), ("arroz", "PRODUCT")]),
+    _crear_prueba("Pagué 8 dólares por la compostura de la bomba hidráulica", "DESARROLLO", [("8 dólares", "PRICE"), ("compostura de la bomba hidráulica", "CONCEPT")]),
+    _crear_prueba("Doce baldes de pintura blanca salieron a 76 dólares", "DESARROLLO", [("Doce baldes", "QUANTITY"), ("pintura blanca", "PRODUCT"), ("76 dólares", "PRICE")]),
+    _crear_prueba("En materiales, el taller gastó 58 dólares", "DESARROLLO", [("materiales", "CONCEPT"), ("58 dólares", "PRICE")]),
+    _crear_prueba("La harina integral se vendió a 22 USD la funda", "DESARROLLO", [("harina integral", "PRODUCT"), ("22 USD", "PRICE")]),
+    _crear_prueba("Compramos 2,5 kg de nuez moscada por 31 euros", "DESARROLLO", [("2,5 kg", "QUANTITY"), ("nuez moscada", "PRODUCT"), ("31 euros", "PRICE")]),
+    _crear_prueba("Veinticuatro cajas de focos LED se entregaron por $94", "DESARROLLO", [("Veinticuatro cajas", "QUANTITY"), ("focos LED", "PRODUCT"), ("$94", "PRICE")]),
+    _crear_prueba("Pagaron 13 euros para instalar la cerradura nueva", "DESARROLLO", [("13 euros", "PRICE"), ("instalar la cerradura nueva", "CONCEPT")]),
+]
+
+
+# Evaluación final reservada. No se importa desde el entrenamiento ni se usa
+# para elegir ejemplos, épocas o parámetros; se consulta una vez al cerrar la
+# candidata para medir generalización adicional.
+PRUEBAS_NER_FINAL = [
+    _crear_prueba("De la cosecha salieron 26 arrobas de frijol rojo, valoradas en 318 euros", "FINAL", [("26 arrobas", "QUANTITY"), ("frijol rojo", "PRODUCT"), ("318 euros", "PRICE")]),
+    _crear_prueba("El taller cargó a caja 67,80 USD por el servicio de soldadura", "FINAL", [("67,80 USD", "PRICE"), ("servicio de soldadura", "CONCEPT")]),
+    _crear_prueba("Recibieron 1.240 pesos por vender barro cocido", "FINAL", [("1.240 pesos", "PRICE"), ("barro cocido", "PRODUCT")]),
+    _crear_prueba("Cinco rollos de lámina galvanizada fueron entregados por 112 dólares", "FINAL", [("Cinco rollos", "QUANTITY"), ("lámina galvanizada", "PRODUCT"), ("112 dólares", "PRICE")]),
+    _crear_prueba("Pagó 27 euros en mantenimiento preventivo de las cámaras", "FINAL", [("27 euros", "PRICE"), ("mantenimiento preventivo de las cámaras", "CONCEPT")]),
+    _crear_prueba("Bajaron del camión 18 sacos de quinua orgánica; el total fue $405", "FINAL", [("18 sacos", "QUANTITY"), ("quinua orgánica", "PRODUCT"), ("$405", "PRICE")]),
+    _crear_prueba("Compró cuarenta metros de cable coaxial a 83 euros", "FINAL", [("cuarenta metros", "QUANTITY"), ("cable coaxial", "PRODUCT"), ("83 euros", "PRICE")]),
+    _crear_prueba("El recaudo fue 51 dólares y correspondió a la venta de cerámicas pintadas", "FINAL", [("51 dólares", "PRICE"), ("cerámicas pintadas", "PRODUCT")]),
+    _crear_prueba("Se reservaron 625 euros para la reparación integral del techo", "FINAL", [("625 euros", "PRICE"), ("reparación integral del techo", "CONCEPT")]),
+    _crear_prueba("Doce kilogramos de ají seco costaron 72,30 dólares", "FINAL", [("Doce kilogramos", "QUANTITY"), ("ají seco", "PRODUCT"), ("72,30 dólares", "PRICE")]),
+    _crear_prueba("Hubo un gasto de USD 96 en limpieza del ducto", "FINAL", [("USD 96", "PRICE"), ("limpieza del ducto", "CONCEPT")]),
+    _crear_prueba("La farmacia entregó tres cajas de gasas estériles a cambio de 29 euros", "FINAL", [("tres cajas", "QUANTITY"), ("gasas estériles", "PRODUCT"), ("29 euros", "PRICE")]),
+    _crear_prueba("Ingresaron 2.300 dólares por quince lotes de madera de pino", "FINAL", [("2.300 dólares", "PRICE"), ("quince lotes", "QUANTITY"), ("madera de pino", "PRODUCT")]),
+    _crear_prueba("Del monto, €14,50 correspondieron al envío urgente", "FINAL", [("€14,50", "PRICE"), ("envío urgente", "CONCEPT")]),
+    _crear_prueba("En la subasta se colocaron siete máscaras de barro por 214 dólares", "FINAL", [("siete", "QUANTITY"), ("máscaras de barro", "PRODUCT"), ("214 dólares", "PRICE")]),
+]
+
+
 # Estas pruebas no comparan offsets NER: comprueban la interpretación final.
 # Solo se exigen campos que el texto permite justificar.
 PRUEBAS_SEMANTICAS = [
@@ -296,6 +358,123 @@ def evaluar_ner(nlp, pruebas, titulo, detallado=False):
     return aciertos
 
 
+def medir_ner(nlp, pruebas):
+    """Métricas de entidad con coincidencia exacta de límites y etiqueta."""
+    from collections import Counter
+
+    etiquetas = ("QUANTITY", "PRODUCT", "PRICE", "CONCEPT")
+    conteos = {etiqueta: {"tp": 0, "fp": 0, "fn": 0} for etiqueta in etiquetas}
+    casos, errores_por_tipo = [], Counter()
+    for texto, anotaciones in pruebas:
+        esperadas = {(inicio, fin, etiqueta) for inicio, fin, etiqueta in anotaciones["entities"]}
+        predichas = {(ent.start_char, ent.end_char, ent.label_) for ent in nlp(texto).ents}
+        for etiqueta in etiquetas:
+            reales = {ent for ent in esperadas if ent[2] == etiqueta}
+            predichas_etiqueta = {ent for ent in predichas if ent[2] == etiqueta}
+            conteos[etiqueta]["tp"] += len(reales & predichas_etiqueta)
+            conteos[etiqueta]["fp"] += len(predichas_etiqueta - reales)
+            conteos[etiqueta]["fn"] += len(reales - predichas_etiqueta)
+        emparejadas = esperadas & predichas
+        sin_pred = set(predichas - emparejadas)
+        errores = []
+        for real in sorted(esperadas - emparejadas):
+            inicio, fin, etiqueta = real
+            solapadas = [p for p in sin_pred if max(inicio, p[0]) < min(fin, p[1])]
+            if not solapadas:
+                error = {"esperado": texto[inicio:fin], "etiqueta_esperada": etiqueta, "predicho": None, "etiqueta_predicha": None, "tipo": "entidad_omitida"}
+            else:
+                def iou(pred):
+                    interseccion = max(0, min(fin, pred[1]) - max(inicio, pred[0]))
+                    union = max(fin, pred[1]) - min(inicio, pred[0])
+                    return interseccion / union if union else 0
+                pred = max(solapadas, key=iou)
+                sin_pred.remove(pred)
+                mismos_limites = (inicio, fin) == pred[:2]
+                if mismos_limites and etiqueta != pred[2]:
+                    tipo = "etiqueta_incorrecta"
+                elif etiqueta == pred[2]:
+                    tipo = "limites_incorrectos_o_entidad_parcial"
+                else:
+                    tipo = "confusion_de_etiqueta_y_limites"
+                error = {"esperado": texto[inicio:fin], "etiqueta_esperada": etiqueta, "predicho": texto[pred[0]:pred[1]], "etiqueta_predicha": pred[2], "tipo": tipo}
+            errores.append(error)
+            errores_por_tipo[error["tipo"]] += 1
+        for inicio, fin, etiqueta in sorted(sin_pred):
+            error = {"esperado": None, "etiqueta_esperada": None, "predicho": texto[inicio:fin], "etiqueta_predicha": etiqueta, "tipo": "falsa_entidad"}
+            errores.append(error)
+            errores_por_tipo[error["tipo"]] += 1
+        casos.append({
+            "texto": texto,
+            "coincidencia_exacta_de_frase": esperadas == predichas,
+            "esperadas": [{"fragmento": texto[s:e], "etiqueta": l, "inicio": s, "fin": e} for s, e, l in sorted(esperadas)],
+            "predichas": [{"fragmento": texto[s:e], "etiqueta": l, "inicio": s, "fin": e} for s, e, l in sorted(predichas)],
+            "errores": errores,
+        })
+    for stats in conteos.values():
+        tp, fp, fn = stats["tp"], stats["fp"], stats["fn"]
+        stats["precision"] = tp / (tp + fp) if tp + fp else 0.0
+        stats["recall"] = tp / (tp + fn) if tp + fn else 0.0
+        stats["f1"] = 2 * stats["precision"] * stats["recall"] / (stats["precision"] + stats["recall"]) if stats["precision"] + stats["recall"] else 0.0
+    micro = {clave: sum(stats[clave] for stats in conteos.values()) for clave in ("tp", "fp", "fn")}
+    micro["precision"] = micro["tp"] / (micro["tp"] + micro["fp"]) if micro["tp"] + micro["fp"] else 0.0
+    micro["recall"] = micro["tp"] / (micro["tp"] + micro["fn"]) if micro["tp"] + micro["fn"] else 0.0
+    micro["f1"] = 2 * micro["precision"] * micro["recall"] / (micro["precision"] + micro["recall"]) if micro["precision"] + micro["recall"] else 0.0
+    macro_f1 = sum(stats["f1"] for stats in conteos.values()) / len(etiquetas)
+    return {
+        "unidad": "entidad con límites y etiqueta exactos; no es métrica por token",
+        "frases": len(casos),
+        "coincidencia_exacta_de_frase": {"correctas": sum(c["coincidencia_exacta_de_frase"] for c in casos), "total": len(casos)},
+        "micro_entidad": micro,
+        "macro_f1_por_etiqueta": macro_f1,
+        "por_etiqueta": conteos,
+        "tipos_de_error": dict(errores_por_tipo),
+        "casos": casos,
+    }
+
+
+def evaluar_validacion_datos(nlp):
+    """Prueba el validador de anotaciones y la detección de fuga textual."""
+    from entrenamiento import auditar_solapamiento, train_data, validar_train_data
+
+    casos_invalidos = [
+        ("etiqueta", [("Caja", {"entities": [(0, 4, "MONEY")]})], "etiqueta"),
+        ("offset fuera de rango", [("Caja", {"entities": [(0, 9, "PRODUCT")]})], "fuera de rango"),
+        ("entidad vacía", [("Caja", {"entities": [(2, 2, "PRODUCT")]})], "fuera de rango"),
+        ("fragmento vacío", [("a b", {"entities": [(1, 2, "PRODUCT")]})], "produce una entidad vacía"),
+        ("solapamiento", [("4 cajas", {"entities": [(0, 1, "QUANTITY"), (0, 6, "PRODUCT")]})], "solapan"),
+        ("duplicado exacto", [("Caja", {"entities": []}), ("Caja", {"entities": []})], "duplicado"),
+        ("alineación de token", [("caja", {"entities": [(1, 4, "PRODUCT")]})], "no está alineado"),
+    ]
+    aciertos = 0
+    print("\nVALIDACIÓN DE ANOTACIONES Y FUGA DE DATOS")
+    print("-" * 60)
+    for nombre, datos, fragmento_esperado in casos_invalidos:
+        try:
+            validar_train_data(nlp, datos)
+            correcto = False
+            detalle = "no rechazó los datos inválidos"
+        except ValueError as exc:
+            correcto = fragmento_esperado in str(exc)
+            detalle = str(exc).splitlines()[-1]
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] {nombre}: {detalle}")
+
+    try:
+        validar_train_data(nlp, train_data)
+        exactos_hist, cercanos_hist = auditar_solapamiento(train_data, PRUEBAS_NUEVAS)
+        exactos_ind, cercanos_ind = auditar_solapamiento(train_data, PRUEBAS_NER_INDEPENDIENTE)
+        correcto = bool(exactos_hist) and bool(cercanos_hist) and not exactos_ind and not cercanos_ind
+    except Exception as exc:
+        correcto = False
+        exactos_hist, cercanos_hist, exactos_ind, cercanos_ind = [], [], [], []
+        print(f"[FALLO] auditoría de conjuntos: {type(exc).__name__}: {exc}")
+    aciertos += int(correcto)
+    print(f"[{'OK' if correcto else 'FALLO'}] separación: legado exactos={len(exactos_hist)}, cercanos={len(cercanos_hist)} | independiente exactos={len(exactos_ind)}, cercanos={len(cercanos_ind)}")
+    total = len(casos_invalidos) + 1
+    print(f"Resultado validación de datos: {aciertos}/{total}")
+    return aciertos
+
+
 def evaluar_semantica(nlp, pruebas=PRUEBAS_SEMANTICAS):
     """Comprueba campos semánticos explícitos y muestra cada caso."""
     print("\nPRUEBAS SEMÁNTICAS")
@@ -490,7 +669,7 @@ EVALUACION_ADVERSARIAL = [
     {"categoria": "entradas_dificiles", "texto": "compre 2 vasos por 5 dolares", "operaciones": [_operacion_esperada(None, "comprar", "EGRESO", "2", "vasos", None, "5 dolares", "DESCONOCIDO")], "relaciones": []},
     {"categoria": "entradas_dificiles", "texto": "Aboné 5 dólares de esa", "operaciones": [_operacion_esperada("YO", "abonar", "EGRESO", None, None, None, "5 dólares", "NO_ESPECIFICADO")], "relaciones": []},
     {"categoria": "entradas_dificiles", "texto": "Venta de artículos, aún sin registrar", "operaciones": [], "relaciones": []},
-    {"categoria": "entradas_dificiles", "texto": "Vendi cinco cajas por dies dólares", "operaciones": [], "relaciones": []},
+    {"categoria": "entradas_dificiles", "texto": "Vendi cinco cajas por dies dólares", "operaciones": [_operacion_esperada(None, "vender", "INGRESO", "cinco cajas", None, None, None, "NO_ESPECIFICADO")], "relaciones": []},
 ]
 
 
@@ -573,23 +752,583 @@ PRUEBAS_REGRESION_FASE_2 = [
 ]
 
 
+def evaluar_regresiones_fase_4(nlp):
+    from interpretacion import interpretar_texto, interpretar_operaciones, interpretar_operaciones_con_relaciones
+
+    print("\nREGRESIONES Y CONSISTENCIA DEL CONTRATO — FASE 4")
+    print("-" * 60)
+    casos = [
+        "Compré 3 y vendí 4 por 20 dólares",
+        "Compré 3 manzanas por 10 dólares y vendí 4 por 20 dólares",
+        "Compré 3 manzanas por 10 dólares y vendí 4 naranjas por 20 dólares",
+    ]
+    aciertos = 0
+    for texto in casos:
+        resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+        ops = resultado["operaciones"]
+        correcto = len(ops) == 2 and ops[1]["producto"] != "por"
+        correcto = correcto and [op["cantidad"] for op in ops] == ["3", "4"]
+        if texto == casos[0]:
+            correcto = correcto and ops[0]["producto"] is None and ops[1]["producto"] is None
+        elif texto == casos[1]:
+            correcto = correcto and ops[0]["producto"] == "manzanas" and ops[1]["producto"] is None
+        else:
+            correcto = correcto and ops[0]["producto"] == "manzanas" and ops[1]["producto"] == "naranjas"
+        correcto = correcto and all(
+            resultado["texto"][meta["inicio"]:meta["fin"]] == meta["texto"]
+            and meta["texto"].casefold() in op["texto"].casefold()
+            for op in ops for campo in op["campos"].values()
+            if (meta := campo.get("evidencia")) and meta.get("inicio") is not None and meta.get("fin") is not None
+        )
+        if correcto:
+            aciertos += 1
+            print(f"[OK] asociación y offsets: {texto!r}")
+        else:
+            print(f"[FALLO] asociación y offsets: {texto!r} | operaciones={ops}")
+
+    relaciones = [
+        ("Compré papel por 100 dólares y aboné 10 dólares de esa compra", 1, "CONFIRMADA", 0),
+        ("Compré papel por 100 dólares y compré fundas por 50 dólares y aboné 10 dólares", 2, None, None),
+        ("Compré papel por 100 dólares y compré fundas por 50 dólares y aboné 10 dólares de esa compra", 2, "AMBIGUA", None),
+        ("Compré papel por 100 dólares y aboné 10 dólares de esa compra y aboné 20 dólares de esa compra", 2, "CONFIRMADA", 0),
+        ("Compré papel por 100 dólares y aboné 10 dólares de la compra anterior", 1, "CONFIRMADA", 0),
+        ("Compré papel por 100 dólares y compré fundas por 50 dólares y aboné 10 dólares de la compra anterior", 2, "CONFIRMADA", 1),
+    ]
+    for texto, compras, estado_relacion, destino in relaciones:
+        resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+        if estado_relacion is None:
+            correcto = resultado["relaciones"] == []
+        else:
+            correctas = [r for r in resultado["relaciones"] if r["estado"] == estado_relacion]
+            correcto = bool(correctas) and all(r["operacion_destino"] == destino for r in correctas)
+        correcto = correcto and len({op["id"] for op in resultado["operaciones"]}) == len(resultado["operaciones"])
+        correcto = correcto and all(
+            resultado["operaciones"][r["operacion_origen"]]["id"] == r["operacion_origen_id"]
+            and (
+                r["operacion_destino"] is None
+                or resultado["operaciones"][r["operacion_destino"]]["id"] == r["operacion_destino_id"]
+            )
+            for r in resultado["relaciones"]
+        )
+        if correcto:
+            aciertos += 1
+            print(f"[OK] relación: {texto!r}")
+        else:
+            print(f"[FALLO] relación: {texto!r} | {resultado['relaciones']}")
+
+    genericos = {
+        "Compré producto por 10 dólares": "GENERICA",
+        "Vendí mercadería por 20 dólares": "GENERICA",
+        "Compré artículos": "GENERICA",
+    }
+    for texto, tipo_esperado in genericos.items():
+        resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+        op = resultado["operaciones"][0] if resultado["operaciones"] else {}
+        correcto = op.get("campos", {}).get("producto", {}).get("interpretacion") == tipo_esperado
+        if correcto:
+            aciertos += 1
+            print(f"[OK] producto genérico preservado: {texto!r}")
+        else:
+            print(f"[FALLO] producto genérico: {texto!r} | {op.get('campos', {}).get('producto')}")
+
+    texto_unidades = "Compré 3 cajas"
+    salida_unidades = interpretar_operaciones_con_relaciones(texto_unidades, nlp=nlp)
+    correcto = bool(salida_unidades["operaciones"]) and salida_unidades["operaciones"][0]["producto"] is None
+    aciertos += int(correcto)
+    print(f"[{'OK' if correcto else 'FALLO'}] unidad sin producto: {texto_unidades!r}")
+
+    for texto, esperado in [("", "error"), ("   ", "error"), ("xyz blorf", "NO_RECONOCIDO"), ("Vendí", "PARCIAL")]:
+        try:
+            if esperado == "error":
+                interpretar_texto(texto, nlp=nlp)
+                correcto = False
+            else:
+                correcto = interpretar_operaciones_con_relaciones(texto, nlp=nlp)["estado"] == esperado
+        except ValueError:
+            correcto = esperado == "error"
+        if esperado == "error":
+            try:
+                interpretar_operaciones(texto, nlp=nlp)
+                correcto = False
+            except ValueError:
+                pass
+            wrapper = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+            correcto = correcto and wrapper["estado"] == "NO_RECONOCIDO" and wrapper["operaciones"] == []
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] entrada {texto!r} -> {esperado}")
+    print(f"\nResultado fase 4: {aciertos}/17 casos correctos")
+    return aciertos
+
+
+def evaluar_endurecimiento_semantico(nlp):
+    from interpretacion import interpretar_operaciones_con_relaciones, interpretar_texto
+
+    print("\nENDURECIMIENTO SEMÁNTICO Y LINGÜÍSTICO")
+    print("-" * 60)
+    casos = [
+        ("vendi 3 libras de tomate por 5 dolares", "vender", "USD", "3 libras", "tomate", "5 dolares"),
+        ("VENDI 3 LIBRAS DE TOMATE POR 5 DOLARES", "vender", "USD", "3 LIBRAS", "TOMATE", "5 DOLARES"),
+        ("Vendí 3 libras de tomate por 5 euros", "vender", "EUR", "3 libras", "tomate", "5 euros"),
+        ("Vendí 3 libras de tomate por 5 pesos", "vender", "PESO", "3 libras", "tomate", "5 pesos"),
+        ("pague 5 dolares", "pagar", "USD", None, None, "5 dolares"),
+        ("gaste 5 euros", "gastar", "EUR", None, None, "5 euros"),
+        ("abone 5 pesos", "abonar", "PESO", None, None, "5 pesos"),
+        ("compre 3 cajas de tomate por 10 dolares", "comprar", "USD", "3 cajas", "tomate", "10 dolares"),
+        ("pago 5 dolares", "pagar", "USD", None, None, "5 dolares"),
+        ("Compré algo", "comprar", None, None, "algo", None),
+        ("Compré algunas cosas", "comprar", None, "algunas", "cosas", None),
+        ("Vendí varios productos", "vender", None, "varios", "productos", None),
+        ("Compré 3 cajas de tomate", "comprar", None, "3 cajas", "tomate", None),
+        ("Vendí 5 camisetas por 30 dólares", "vender", "USD", "5", "camisetas", "30 dólares"),
+    ]
+    aciertos = 0
+    for texto, accion, moneda, cantidad, producto, precio in casos:
+        resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+        op = resultado["operaciones"][0] if resultado["operaciones"] else {}
+        campos_correctos = (op.get("accion"), op.get("moneda"), op.get("cantidad"), op.get("producto"), op.get("precio")) == (accion, moneda, cantidad, producto, precio)
+        if producto in {"algo", "algunas cosas", "productos"}:
+            campos_correctos = campos_correctos and op.get("campos", {}).get("producto", {}).get("interpretacion") == "GENERICA"
+            estado_esperado = "AMBIGUO" if cantidad in {"varios", "varias", "algunos", "algunas", "muchos", "muchas"} else "PARCIAL"
+            campos_correctos = campos_correctos and op.get("estado") == estado_esperado
+        correcto = len(resultado["operaciones"]) == 1 and campos_correctos
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] {texto!r} | real={((op.get('accion'), op.get('moneda'), op.get('cantidad'), op.get('producto'), op.get('precio'), op.get('estado')))}")
+
+    modalidades = [
+        ("No compré nada", "NEGADA", "comprar"),
+        ("No vendí nada", "NEGADA", "vender"),
+        ("No pagué", "NEGADA", "pagar"),
+        ("No quiero comprar", "INTENCION", "comprar"),
+        ("Quiero comprar tomate mañana", "INTENCION", "comprar"),
+        ("Tal vez compré tomate", "INCIERTA", "comprar"),
+        ("Tal vez compré mercadería por 10 dólares", "INCIERTA", "comprar"),
+        ("No compré tomate", "NEGADA", "comprar"),
+        ("Sí compré tomate", "AFIRMADA", "comprar"),
+    ]
+    for texto, modalidad, accion in modalidades:
+        resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+        op = resultado["operaciones"][0] if resultado["operaciones"] else {}
+        analisis = interpretar_texto(texto, nlp=nlp)
+        correcto = analisis.get("modalidad") == modalidad and analisis.get("accion") == accion
+        correcto = correcto and (len(resultado["operaciones"]) == (1 if modalidad == "AFIRMADA" else 0))
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] admisión modalidad {texto!r} | análisis={analisis.get('modalidad')}, operaciones={len(resultado['operaciones'])}")
+
+    relacion_negada = interpretar_operaciones_con_relaciones(
+        "No compré papel por 10 dólares y aboné 2 dólares de esa compra", nlp=nlp
+    )
+    relaciones_negadas = relacion_negada.get("relaciones", [])
+    correcto = (
+        len(relaciones_negadas) == 1
+        and relaciones_negadas[0].get("estado") == "AMBIGUA"
+        and relaciones_negadas[0].get("operacion_destino_id") is None
+        and len(relacion_negada["operaciones"]) == 1
+        and relacion_negada["operaciones"][0].get("accion") == "abonar"
+    )
+    aciertos += int(correcto)
+    print(f"[{'OK' if correcto else 'FALLO'}] relación a compra negada | real={relaciones_negadas}")
+
+    estados = ["Vendí 2 linternas por 12 dólares", "Por 20 dólares vendí 2 lámparas"]
+    for texto in estados:
+        resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+        op = resultado["operaciones"][0]
+        ambiguo = any(meta.get("estado") == "AMBIGUO" for meta in op["campos"].values())
+        correcto = not (ambiguo and op["estado"] == "VALIDO")
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] coherencia {texto!r} | op={op['estado']}, campos={[m['estado'] for m in op['campos'].values()]}")
+    finanzas = [
+        ("Vendí 5 dólares por caja", "UNITARIO", "USD"),
+        ("Vendí 5 dólares en total", "TOTAL", "USD"),
+        ("Vendí 5", "NO_ESPECIFICADO", None),
+        ("Vendí diez dólares", "NO_ESPECIFICADO", "USD"),
+        ("Vendí cinco dólares", "NO_ESPECIFICADO", "USD"),
+        ("Vendí 5 dolares", "NO_ESPECIFICADO", "USD"),
+        ("Vendí 5 DÓLARES", "NO_ESPECIFICADO", "USD"),
+        ("Vendí 5 euros", "NO_ESPECIFICADO", "EUR"),
+        ("Vendí 5 pesos", "NO_ESPECIFICADO", "PESO"),
+        ("Vendi cinco cajas por dies dólares", "NO_ESPECIFICADO", None),
+        ("Vendi cinco cajas por un importe desconocido", "NO_ESPECIFICADO", None),
+    ]
+    for texto, ambito, moneda in finanzas:
+        resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+        op = resultado["operaciones"][0] if resultado["operaciones"] else {}
+        precio_meta = op.get("campos", {}).get("precio", {})
+        correcto = op.get("moneda") == moneda and precio_meta.get("ambito") == ambito
+        if "dies" in texto or "importe desconocido" in texto:
+            correcto = correcto and op.get("precio") is None and "precio" in op.get("faltantes", [])
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] importe {texto!r} | real={op.get('precio')}, {op.get('moneda')}, {precio_meta.get('ambito')}")
+    total = len(casos) + len(modalidades) + 1 + len(estados) + len(finanzas)
+    print(f"\nResultado endurecimiento: {aciertos}/{total}")
+    return aciertos
+
+
+def evaluar_admision_operaciones(nlp):
+    from interpretacion import interpretar_operaciones_con_relaciones, interpretar_texto
+
+    print("\nADMISIÓN DE OPERACIONES AFIRMADAS")
+    print("-" * 60)
+    aceptadas = [
+        ("Compré 3 cajas de tomate por 10 dólares", ["comprar"]),
+        ("Vendí tomate por 5 dólares", ["vender"]),
+        ("María compró 4 productos", ["comprar"]),
+        ("Aboné 10 dólares de esa compra", ["abonar"]),
+        ("Compré tomate y después vendí cebollas", ["comprar", "vender"]),
+        ("Tal vez compré tomate, pero ayer vendí cebollas", ["vender"]),
+        ("No compré tomate y vendí cebollas", ["vender"]),
+    ]
+    rechazadas = [
+        "Tal vez compré tomate", "Quizá vendí cajas", "Creo que compré tomate",
+        "No compré tomate", "Nunca vendí cebollas", "No quiero comprar tomate",
+        "Quiero comprar tomate mañana", "Podría comprar tomate",
+        "Si compro tomate, pagaré después", "Compraré tomate mañana",
+    ]
+    aciertos = 0
+    for texto, acciones_esperadas in aceptadas:
+        resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+        acciones_reales = [op["accion"] for op in resultado["operaciones"]]
+        correcto = acciones_reales == acciones_esperadas
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] afirmadas {texto!r} | esperado={acciones_esperadas}, real={acciones_reales}")
+    for texto in rechazadas:
+        resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+        correcto = resultado["operaciones"] == []
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] no ejecutada {texto!r} | operaciones={len(resultado['operaciones'])}")
+
+    incompletas = [
+        ("Compré tomate", "PARCIAL", None, "tomate", None),
+        ("Compré cinco cajas por dies dólares", "PARCIAL", "cinco cajas", None, None),
+        ("Vendi cinco cajas por diez dólares", "AMBIGUO", "cinco cajas", None, "diez dólares"),
+        ("Vendí varios productos", "AMBIGUO", "varios", "productos", None),
+        ("Compré varias cosas", "AMBIGUO", "varias", "cosas", None),
+    ]
+    for texto, estado, cantidad, producto, precio in incompletas:
+        resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+        op = resultado["operaciones"][0] if len(resultado["operaciones"]) == 1 else {}
+        correcto = (op.get("estado"), op.get("cantidad"), op.get("producto"), op.get("precio")) == (estado, cantidad, producto, precio)
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] campos explícitos {texto!r} | real={(op.get('estado'), op.get('cantidad'), op.get('producto'), op.get('precio'))}")
+
+    texto = "Compraron tomate"
+    resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+    op = resultado["operaciones"][0] if resultado["operaciones"] else {}
+    correcto = op.get("cantidad") is None and op.get("producto") == "tomate" and op.get("agente") == "TERCERA_PERSONA_PLURAL"
+    aciertos += int(correcto)
+    print(f"[{'OK' if correcto else 'FALLO'}] cantidad/producto/agente {texto!r} | real={(op.get('cantidad'), op.get('producto'), op.get('agente'))}")
+
+    for texto, agente in [("Compramos tomate", "NOSOTROS"), ("María compró tomate", "María")]:
+        resultado = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+        op = resultado["operaciones"][0] if resultado["operaciones"] else {}
+        correcto = op.get("agente") == agente
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] atribución explícita {texto!r} | agente={op.get('agente')}")
+
+    lectura = interpretar_texto("Quizá vendí cajas", nlp=nlp)
+    correcto = lectura.get("producto") is None
+    aciertos += int(correcto)
+    print(f"[{'OK' if correcto else 'FALLO'}] no atribuir verbo como producto | producto={lectura.get('producto')}")
+
+    total = len(aceptadas) + len(rechazadas) + len(incompletas) + 4
+    print(f"\nResultado admisión: {aciertos}/{total}")
+    return aciertos
+
+
 def evaluar_regresiones_fase_2(nlp):
     print("\nREGRESIONES DE LOS FALLOS ADVERSARIALES INICIALES")
     return evaluar_conjunto_independiente(nlp, PRUEBAS_REGRESION_FASE_2)
 
 
-def main():
-    import spacy
+def evaluar_matriz_modalidad(nlp):
+    """Valida cláusula por cláusula qué operaciones afirmadas admite el contrato."""
+    from interpretacion import interpretar_operaciones_con_relaciones
 
-    nlp = spacy.load("custom_ner_model")
-    evaluar_ner(nlp, PRUEBAS_NUEVAS, "PRUEBAS NER", detallado=True)
-    evaluar_entidades(nlp)
-    evaluar_semantica(nlp)
-    evaluar_operaciones_multiples(nlp)
-    evaluar_relaciones(nlp)
-    evaluar_contrato(nlp)
-    evaluar_conjunto_independiente(nlp)
-    evaluar_regresiones_fase_2(nlp)
+    casos = [
+        ("No compré tomate, pero vendí cebollas", ["vender"], [("vender", "cebollas")]),
+        ("Tal vez compré tomate, pero ayer vendí cebollas", ["vender"], [("vender", "cebollas")]),
+        ("Creo que compré tomate y después pagué 5 dólares", ["pagar"], [("pagar", None)]),
+        ("No compré tomate y tampoco pagué", [], []),
+        ("No compré tomate, pero sí aboné 5 dólares de una deuda anterior", ["abonar"], [("abonar", None)]),
+        ("Compré tomate y no vendí cebollas", ["comprar"], [("comprar", "tomate")]),
+        ("Si compro tomate, pagaré mañana", [], []),
+        ("Quiero comprar tomate, pero ayer compré arroz", ["comprar"], [("comprar", "arroz")]),
+        ("Mañana compraré tomate y hoy vendí arroz", ["vender"], [("vender", "arroz")]),
+        ("No quiero comprar tomate; pagué una deuda ayer", ["pagar"], [("pagar", None)]),
+    ]
+    errores = 0
+    print("\nMATRIZ DE DIEZ FRASES: MODALIDAD Y ADMISIÓN")
+    print("-" * 60)
+    for texto, acciones_esperadas, valores_esperados in casos:
+        try:
+            salida = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+            operaciones = salida["operaciones"]
+            acciones = [op.get("accion") for op in operaciones]
+            campos = [(op.get("accion"), op.get("producto")) for op in operaciones]
+            correcto = acciones == acciones_esperadas and campos == valores_esperados
+            # Los campos incompletos deben seguir ausentes y los identificadores no deben repetirse.
+            correcto = correcto and len({op.get("id") for op in operaciones}) == len(operaciones)
+            if texto == casos[2][0]:
+                correcto = correcto and operaciones[0].get("precio") == "5 dólares" and operaciones[0].get("producto") is None
+            if texto == casos[4][0]:
+                correcto = correcto and operaciones[0].get("precio") == "5 dólares"
+            if texto == casos[9][0]:
+                correcto = correcto and operaciones[0].get("producto") is None
+        except Exception as exc:
+            correcto, operaciones = False, []
+            print(f"[FALLO] {texto!r} | excepción={type(exc).__name__}: {exc}")
+        errores += int(not correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] {texto!r} | acciones esperadas={acciones_esperadas}, obtenidas={[op.get('accion') for op in operaciones]} | ops={[(op.get('accion'), op.get('agente'), op.get('producto'), op.get('cantidad'), op.get('precio')) for op in operaciones]}")
+    print(f"Resultado matriz modalidad: {len(casos) - errores}/{len(casos)} | fallos={errores}")
+    return errores
+
+
+def evaluar_relaciones_evidencia(nlp):
+    """Comprueba integridad de relaciones e índices de evidencia sobre el original."""
+    from interpretacion import interpretar_operaciones_con_relaciones
+
+    casos = [
+        ("Compré papel y aboné 2 dólares de esa compra", "confirmada"),
+        ("No compré papel y aboné 2 dólares de esa compra", "no_destino_no_admitido"),
+        ("Tal vez compré papel y aboné 2 dólares de esa compra", "no_destino_no_admitido"),
+        ("Compré café y compré té; aboné 2 dólares de esa compra", "ambigua"),
+        ("Compré papel y luego pagué 2 dólares", "sin_relacion"),
+        ("Compré 3 cajas de té; después aboné 2 dólares de esa compra", "offsets"),
+        ("COMPRÉ  2 cajas de café, y luego aboné 1 dólar de esa compra", "offsets"),
+        ("Compré té. Pagué 2 dólares de la compra anterior", "offsets"),
+    ]
+    errores = 0
+    print("\nRELACIONES, EVIDENCIA, OFFSETS E IDENTIFICADORES")
+    print("-" * 60)
+    for texto, tipo in casos:
+        correcto = True
+        try:
+            salida = interpretar_operaciones_con_relaciones(texto, nlp=nlp)
+            ops, relaciones = salida["operaciones"], salida["relaciones"]
+            ids = {op.get("id") for op in ops}
+            correcto = len(ids) == len(ops) and None not in ids
+            for rel in relaciones:
+                correcto = correcto and rel.get("operacion_origen_id") in ids
+                if rel.get("estado") == "CONFIRMADA":
+                    destino = next((op for op in ops if op.get("id") == rel.get("operacion_destino_id")), None)
+                    correcto = correcto and destino is not None and destino.get("accion") == "comprar"
+                if rel.get("operacion_destino_id") is not None:
+                    correcto = correcto and rel["operacion_destino_id"] in ids
+            if tipo == "confirmada":
+                correcto = correcto and len(relaciones) == 1 and relaciones[0].get("estado") == "CONFIRMADA"
+            elif tipo == "no_destino_no_admitido":
+                correcto = correcto and all(r.get("estado") != "CONFIRMADA" for r in relaciones)
+                correcto = correcto and not any(op.get("accion") == "comprar" for op in ops)
+            elif tipo == "ambigua":
+                correcto = correcto and len(relaciones) == 1 and relaciones[0].get("estado") == "AMBIGUA" and relaciones[0].get("operacion_destino_id") is None
+            elif tipo == "sin_relacion":
+                correcto = correcto and relaciones == []
+            elif tipo == "offsets":
+                campos = [meta for op in ops for meta in op.get("campos", {}).values()]
+                for meta in campos:
+                    evidencia = meta.get("evidencia")
+                    if evidencia and evidencia.get("inicio") is not None and evidencia.get("fin") is not None:
+                        inicio, fin = evidencia["inicio"], evidencia["fin"]
+                        correcto = correcto and 0 <= inicio <= fin <= len(texto)
+                        correcto = correcto and texto[inicio:fin] == evidencia.get("texto")
+        except Exception as exc:
+            correcto = False
+            print(f"[FALLO] {texto!r} | excepción={type(exc).__name__}: {exc}")
+        errores += int(not correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] {tipo}: {texto!r} | ops={[(o.get('id'), o.get('accion')) for o in salida.get('operaciones', [])] if 'salida' in locals() else []} | relaciones={salida.get('relaciones', []) if 'salida' in locals() else []}")
+        if 'salida' in locals():
+            del salida
+    print(f"Resultado relaciones/evidencia: {len(casos) - errores}/{len(casos)} | fallos={errores}")
+    return errores
+
+
+def evaluar_interfaz_independiente(nlp):
+    """Comprueba inicialización, tipos de entrada, límites y estado residual."""
+    from pathlib import Path
+    from interpretacion import (
+        MODELO_BASE, MODELO_ENTRENADO, cargar_modelo, interpretar_operaciones_con_relaciones,
+        interpretar_texto, serializar_resultado,
+    )
+
+    casos = []
+    try:
+        ruta_inexistente = Path(__file__).resolve().parent / "__modelo_ausente_para_regresion__"
+        try:
+            cargar_modelo(ruta_inexistente)
+            casos.append(("modelo ausente", False, "se cargó sin existir"))
+        except RuntimeError as exc:
+            casos.append(("modelo ausente", "No se encontró" in str(exc) or "No se pudo" in str(exc), str(exc)))
+
+        modelo_base = cargar_modelo(MODELO_BASE)
+        modelo_custom = cargar_modelo(Path(__file__).resolve().parent / MODELO_ENTRENADO)
+        casos.append(("cache por ruta", modelo_base is not modelo_custom and "ner" in modelo_custom.pipe_names, f"base={modelo_base.meta.get('name')}, custom labels={len(modelo_custom.get_pipe('ner').labels)}"))
+
+        vacio = interpretar_operaciones_con_relaciones("", nlp=nlp)
+        casos.append(("texto vacío estructurado", vacio.get("estado") == "NO_RECONOCIDO" and vacio.get("operaciones") == [], str(vacio)))
+        invalido = interpretar_operaciones_con_relaciones(42, nlp=nlp)
+        casos.append(("tipo inválido", invalido.get("estado") == "NO_RECONOCIDO" and bool(invalido.get("advertencias")), str(invalido)))
+
+        muestra = interpretar_operaciones_con_relaciones(
+            "Compré papel y aboné 2 dólares de esa compra", nlp=nlp
+        )
+        contrato_correcto = [op.get("id") for op in muestra["operaciones"]] == ["op_1", "op_2"]
+        contrato_correcto = contrato_correcto and len(muestra["relaciones"]) == 1
+        if muestra["relaciones"]:
+            contrato_correcto = contrato_correcto and (
+                muestra["relaciones"][0].get("estado") == "CONFIRMADA"
+                and muestra["relaciones"][0].get("operacion_destino_id") == "op_1"
+            )
+        casos.append(("ejemplo público de contrato", contrato_correcto, str(muestra["relaciones"])))
+
+        try:
+            interpretar_texto("   ", nlp=nlp)
+            casos.append(("API analítica vacía", False, "no lanzó ValueError"))
+        except ValueError as exc:
+            casos.append(("API analítica vacía", True, str(exc)))
+
+        demasiado_largo = "x" * (nlp.max_length + 1)
+        try:
+            interpretar_operaciones_con_relaciones(demasiado_largo, nlp=nlp)
+            casos.append(("texto extenso", False, "no respetó max_length"))
+        except ValueError as exc:
+            casos.append(("texto extenso", "máximo" in str(exc), str(exc)))
+
+        frase = "Compré té por 7 dólares; después aboné 2 dólares de esa compra"
+        primera = serializar_resultado(interpretar_operaciones_con_relaciones(frase, nlp=nlp))
+        interpretar_operaciones_con_relaciones("Vendi cinco cajas por dies dólares", nlp=nlp)
+        segunda = serializar_resultado(interpretar_operaciones_con_relaciones(frase, nlp=nlp))
+        casos.append(("Unicode, repetición y estado residual", primera == segunda and "té" in primera, "salidas repetidas iguales" if primera == segunda else "las salidas difieren"))
+    except Exception as exc:
+        casos.append(("error inesperado", False, f"{type(exc).__name__}: {exc}"))
+
+    aciertos = 0
+    print("\nINTERFAZ INDEPENDIENTE, CARGA Y ERRORES")
+    print("-" * 60)
+    for nombre, correcto, detalle in casos:
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] {nombre}: {detalle}")
+    total = 8
+    # Un error inesperado puede interrumpir la construcción; cuenta los restantes como fallidos.
+    aciertos = min(aciertos, total)
+    print(f"Resultado interfaz: {aciertos}/{total}")
+    return aciertos
+
+
+def ejecutar_baterias(nlp, baterias):
+    """Ejecuta todas las baterías y distingue fallos de casos no ejecutados."""
+    aprobadas = fallos = no_ejecutadas = errores_ejecucion = 0
+    for nombre, ejecutar, total in baterias:
+        try:
+            aciertos = ejecutar(nlp)
+            if type(aciertos) is not int or not 0 <= aciertos <= total:
+                raise TypeError(f"la batería devolvió {type(aciertos).__name__}={aciertos!r}, fuera de 0..{total}")
+            aprobadas += aciertos
+            fallos += total - aciertos
+        except Exception as exc:
+            errores_ejecucion += 1
+            no_ejecutadas += total
+            print(f"[EXCEPCIÓN] batería {nombre}: {type(exc).__name__}: {exc}")
+    return aprobadas, fallos, no_ejecutadas, errores_ejecucion
+
+
+def evaluar_segmentacion_ner(nlp):
+    """Verifica proyección acotada, offsets y límites semánticos de segmentos."""
+    from interpretacion import interpretar_operaciones_con_relaciones
+
+    pruebas = [
+        {
+            "texto": "Compré cajas, pagué el transporte y vendí productos",
+            "operaciones": [("comprar", None), ("pagar", None), ("vender", "productos")],
+            "diagnostico": "proyeccion_sin_ancla_local",
+            "span": "cajas",
+        },
+        {
+            "texto": "Compré tomate y no vendí cebollas",
+            "operaciones": [("comprar", "tomate")],
+            "diagnostico": None,
+            "span": None,
+        },
+        {
+            "texto": "Mañana compraré tomate y hoy vendí arroz",
+            "operaciones": [("vender", "arroz")],
+            "diagnostico": None,
+            "span": None,
+        },
+        {
+            "texto": "Vendí tomate por 6 dólares y vendí fundas por 4 dólares",
+            "operaciones": [("vender", "tomate"), ("vender", "fundas")],
+            "diagnostico": None,
+            "span": None,
+        },
+    ]
+    aciertos = 0
+    for caso in pruebas:
+        resultado = interpretar_operaciones_con_relaciones(caso["texto"], nlp=nlp)
+        operaciones = [(op.get("accion"), op.get("producto")) for op in resultado["operaciones"]]
+        correcto = operaciones == caso["operaciones"] and "diagnosticos_ner" in resultado
+        if caso["diagnostico"]:
+            span_completo = next((
+                ent for ent in nlp(caso["texto"]).ents
+                if ent.text.casefold() == caso["span"].casefold()
+            ), None)
+            spans = [
+                d["span"] for d in resultado["diagnosticos_ner"]
+                if d.get("tipo") == caso["diagnostico"]
+            ]
+            if span_completo is not None:
+                correcto = correcto and any(
+                    caso["texto"][span["inicio"]:span["fin"]] == caso["span"]
+                    for span in spans
+                )
+        if caso["texto"].startswith("Vendí tomate por") and len(resultado["operaciones"]) == 2:
+            evidencia = resultado["operaciones"][1]["campos"]["producto"]["evidencia"]
+            correcto = correcto and (
+                evidencia is not None
+                and caso["texto"][evidencia["inicio"]:evidencia["fin"]] == "fundas"
+            )
+        aciertos += int(correcto)
+        estado = "OK" if correcto else "FALLO"
+        print(f"[{estado}] segmentación NER {caso['texto']!r} | ops={operaciones} | diagnósticos={len(resultado.get('diagnosticos_ner', []))}")
+    print(f"Resultado segmentación NER: {aciertos}/{len(pruebas)}")
+    return aciertos
+
+
+def construir_baterias():
+    """Devuelve la matriz única de baterías usada por pruebas y promoción."""
+    return [
+        ("NER", lambda modelo: evaluar_ner(modelo, PRUEBAS_NUEVAS, "PRUEBAS NER", detallado=True), len(PRUEBAS_NUEVAS)),
+        ("NER independiente", lambda modelo: evaluar_ner(modelo, PRUEBAS_NER_INDEPENDIENTE, "EVALUACIÓN NER INDEPENDIENTE"), len(PRUEBAS_NER_INDEPENDIENTE)),
+        ("validación de datos", evaluar_validacion_datos, 8),
+        ("interfaz independiente", evaluar_interfaz_independiente, 8),
+        ("entidades", evaluar_entidades, len(PRUEBAS_ENTIDADES)),
+        ("semántica", evaluar_semantica, len(PRUEBAS_SEMANTICAS)),
+        ("operaciones múltiples", evaluar_operaciones_multiples, len(PRUEBAS_OPERACIONES_MULTIPLES)),
+        ("relaciones", evaluar_relaciones, len(PRUEBAS_RELACIONES)),
+        ("contrato", evaluar_contrato, len(PRUEBAS_CONTRATO)),
+        ("adversarial", lambda modelo: len(EVALUACION_ADVERSARIAL) - len(evaluar_conjunto_independiente(modelo)[2]), len(EVALUACION_ADVERSARIAL)),
+        ("fase 2", lambda modelo: len(PRUEBAS_REGRESION_FASE_2) - len(evaluar_regresiones_fase_2(modelo)[2]), len(PRUEBAS_REGRESION_FASE_2)),
+        ("fase 4", evaluar_regresiones_fase_4, 17),
+        ("endurecimiento", evaluar_endurecimiento_semantico, 37),
+        ("admisión", evaluar_admision_operaciones, 26),
+        ("matriz modalidad", lambda modelo: 10 - evaluar_matriz_modalidad(modelo), 10),
+        ("relaciones/evidencia", lambda modelo: 8 - evaluar_relaciones_evidencia(modelo), 8),
+        ("segmentación NER segura", evaluar_segmentacion_ner, 4),
+    ]
+
+
+def main():
+    baterias = construir_baterias()
+    total = sum(total for _, _, total in baterias)
+    from interpretacion import cargar_modelo
+    try:
+        nlp = cargar_modelo()
+    except (RuntimeError, OSError) as exc:
+        print(f"[EXCEPCIÓN] carga del modelo: {type(exc).__name__}: {exc}")
+        print(f"\nTOTAL FINAL: {total} | aprobaciones=0 | fallos=0 | no ejecutadas={total} | errores de ejecución=1")
+        raise SystemExit(1) from exc
+    aprobadas, fallos, no_ejecutadas, errores_ejecucion = ejecutar_baterias(nlp, baterias)
+    print(f"\nTOTAL FINAL: {total} | aprobaciones={aprobadas} | fallos={fallos} | no ejecutadas={no_ejecutadas} | errores de ejecución={errores_ejecucion}")
+    if fallos or no_ejecutadas or errores_ejecucion:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
