@@ -1,0 +1,505 @@
+{
+  "$defs": {
+    "Bloqueo": {
+      "additionalProperties": false,
+      "properties": {
+        "codigo": {
+          "title": "Codigo",
+          "type": "string"
+        },
+        "operacion_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Operacion Id"
+        }
+      },
+      "required": [
+        "codigo",
+        "operacion_id"
+      ],
+      "title": "Bloqueo",
+      "type": "object"
+    },
+    "Evidencia": {
+      "additionalProperties": false,
+      "properties": {
+        "texto": {
+          "title": "Texto",
+          "type": "string"
+        },
+        "inicio": {
+          "minimum": 0,
+          "title": "Inicio",
+          "type": "integer"
+        },
+        "fin": {
+          "exclusiveMinimum": 0,
+          "title": "Fin",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "texto",
+        "inicio",
+        "fin"
+      ],
+      "title": "Evidencia",
+      "type": "object"
+    },
+    "Importe": {
+      "additionalProperties": false,
+      "properties": {
+        "original": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Original"
+        },
+        "valor": {
+          "anyOf": [
+            {
+              "pattern": "^[-+]?\\d+(?:\\.\\d+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Valor"
+        },
+        "moneda": {
+          "anyOf": [
+            {
+              "enum": [
+                "USD",
+                "EUR",
+                "PESO"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Moneda"
+        },
+        "estado": {
+          "enum": [
+            "AUSENTE",
+            "IDENTIFICADO",
+            "AMBIGUO"
+          ],
+          "title": "Estado",
+          "type": "string"
+        },
+        "motivos": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Motivos",
+          "type": "array"
+        }
+      },
+      "required": [
+        "original",
+        "valor",
+        "moneda",
+        "estado",
+        "motivos"
+      ],
+      "title": "Importe",
+      "type": "object"
+    },
+    "Operacion": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "texto": {
+          "title": "Texto",
+          "type": "string"
+        },
+        "agente": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Agente"
+        },
+        "contraparte": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Contraparte"
+        },
+        "accion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Accion"
+        },
+        "tipo": {
+          "anyOf": [
+            {
+              "enum": [
+                "INGRESO",
+                "EGRESO"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Tipo"
+        },
+        "cantidad": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cantidad"
+        },
+        "producto": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Producto"
+        },
+        "concepto": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Concepto"
+        },
+        "precio": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Precio"
+        },
+        "moneda": {
+          "anyOf": [
+            {
+              "enum": [
+                "USD",
+                "EUR",
+                "PESO"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Moneda"
+        },
+        "estado": {
+          "enum": [
+            "VALIDO",
+            "PARCIAL",
+            "AMBIGUO",
+            "NO_RECONOCIDO"
+          ],
+          "title": "Estado",
+          "type": "string"
+        },
+        "importe": {
+          "$ref": "#/$defs/Importe"
+        },
+        "ambito_precio": {
+          "enum": [
+            "UNITARIO",
+            "TOTAL",
+            "DESCONOCIDO",
+            "NO_ESPECIFICADO"
+          ],
+          "title": "Ambito Precio",
+          "type": "string"
+        },
+        "evidencias": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Evidencia"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Evidencias",
+          "type": "object"
+        },
+        "productos_mencionados": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Evidencia"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "incidencias": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Incidencias",
+          "type": "array"
+        },
+        "faltantes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Faltantes",
+          "type": "array"
+        },
+        "advertencias": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Advertencias",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "texto",
+        "agente",
+        "contraparte",
+        "accion",
+        "tipo",
+        "cantidad",
+        "producto",
+        "concepto",
+        "precio",
+        "moneda",
+        "estado",
+        "importe",
+        "ambito_precio",
+        "evidencias",
+        "productos_mencionados",
+        "incidencias",
+        "faltantes",
+        "advertencias"
+      ],
+      "title": "Operacion",
+      "type": "object"
+    },
+    "Relacion": {
+      "additionalProperties": false,
+      "properties": {
+        "operacion_origen_id": {
+          "title": "Operacion Origen Id",
+          "type": "string"
+        },
+        "operacion_destino_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Operacion Destino Id"
+        },
+        "tipo": {
+          "enum": [
+            "ABONO_DE",
+            "PAGO_DE"
+          ],
+          "title": "Tipo",
+          "type": "string"
+        },
+        "evidencia": {
+          "title": "Evidencia",
+          "type": "string"
+        },
+        "estado": {
+          "enum": [
+            "CONFIRMADA",
+            "AMBIGUA"
+          ],
+          "title": "Estado",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operacion_origen_id",
+        "operacion_destino_id",
+        "tipo",
+        "evidencia",
+        "estado"
+      ],
+      "title": "Relacion",
+      "type": "object"
+    },
+    "Revision": {
+      "additionalProperties": false,
+      "properties": {
+        "requiere_revision": {
+          "const": true,
+          "title": "Requiere Revision",
+          "type": "boolean"
+        },
+        "registrable": {
+          "const": false,
+          "title": "Registrable",
+          "type": "boolean"
+        },
+        "bloqueos": {
+          "items": {
+            "$ref": "#/$defs/Bloqueo"
+          },
+          "title": "Bloqueos",
+          "type": "array"
+        },
+        "motivo": {
+          "title": "Motivo",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requiere_revision",
+        "registrable",
+        "bloqueos",
+        "motivo"
+      ],
+      "title": "Revision",
+      "type": "object"
+    },
+    "Versiones": {
+      "additionalProperties": false,
+      "properties": {
+        "componente": {
+          "title": "Componente",
+          "type": "string"
+        },
+        "modelo": {
+          "title": "Modelo",
+          "type": "string"
+        },
+        "reglas": {
+          "title": "Reglas",
+          "type": "string"
+        },
+        "esquema": {
+          "const": "1.0.0",
+          "title": "Esquema",
+          "type": "string"
+        }
+      },
+      "required": [
+        "componente",
+        "modelo",
+        "reglas",
+        "esquema"
+      ],
+      "title": "Versiones",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "texto": {
+      "title": "Texto",
+      "type": "string"
+    },
+    "estado": {
+      "enum": [
+        "VALIDO",
+        "PARCIAL",
+        "AMBIGUO",
+        "NO_RECONOCIDO"
+      ],
+      "title": "Estado",
+      "type": "string"
+    },
+    "versiones": {
+      "$ref": "#/$defs/Versiones"
+    },
+    "operaciones": {
+      "items": {
+        "$ref": "#/$defs/Operacion"
+      },
+      "title": "Operaciones",
+      "type": "array"
+    },
+    "relaciones": {
+      "items": {
+        "$ref": "#/$defs/Relacion"
+      },
+      "title": "Relaciones",
+      "type": "array"
+    },
+    "revision": {
+      "$ref": "#/$defs/Revision"
+    },
+    "advertencias": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Advertencias",
+      "type": "array"
+    }
+  },
+  "required": [
+    "texto",
+    "estado",
+    "versiones",
+    "operaciones",
+    "relaciones",
+    "revision",
+    "advertencias"
+  ],
+  "title": "Propuesta",
+  "type": "object"
+}
