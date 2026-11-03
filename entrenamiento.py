@@ -54,14 +54,14 @@ train_data = [
     ("El Pepe vendió 6 botellas de miel a 18 dólares", {"entities": [(15, 25, "QUANTITY"), (29, 33, "PRODUCT"), (36, 46, "PRICE")]}),
     ("gasté 25 dólares en el alquiler", {"entities": [(6, 16, "PRICE"), (23, 31, "CONCEPT")]}),
     ("Ayer vendió María 5 bolsas de café a 15 dólares", {"entities": [(18, 26, "QUANTITY"), (30, 34, "PRODUCT"), (37, 47, "PRICE")]}),
-    ("Se vendieron 3 botellas de jugo por 14 dólares", {"entities": [(13, 14, "QUANTITY"), (15, 23, "PRODUCT"), (36, 46, "PRICE")]}),
-    ("Se compraron 2 paquetes de servilletas por 16 dólares", {"entities": [(13, 14, "QUANTITY"), (15, 23, "PRODUCT"), (43, 53, "PRICE")]}),
+    _crear_dato("Se vendieron 3 botellas de jugo por 14 dólares", [("3 botellas", "QUANTITY"), ("jugo", "PRODUCT"), ("14 dólares", "PRICE")]),
+    _crear_dato("Se compraron 2 paquetes de servilletas por 16 dólares", [("2 paquetes", "QUANTITY"), ("servilletas", "PRODUCT"), ("16 dólares", "PRICE")]),
     ("Se gastaron 12 dólares en limpieza", {"entities": [(12, 22, "PRICE"), (26, 34, "CONCEPT")]}),
     ("compré 4 lámparas por 30 dólares", {"entities": [(7, 8, "QUANTITY"), (9, 17, "PRODUCT"), (22, 32, "PRICE")]}),
     ("vendimos 8 focos por 25 dólares", {"entities": [(9, 10, "QUANTITY"), (11, 16, "PRODUCT"), (21, 31, "PRICE")]}),
     ("Adquirí 3 cuadernos por 12 dólares", {"entities": [(8, 9, "QUANTITY"), (10, 19, "PRODUCT"), (24, 34, "PRICE")]}),
-    ("ofreció 7 botellas de jugo por 21 dólares", {"entities": [(8, 9, "QUANTITY"), (10, 18, "PRODUCT"), (31, 41, "PRICE")]}),
-    ("Por 18 dólares vendimos 5 paquetes de galletas", {"entities": [(4, 14, "PRICE"), (24, 25, "QUANTITY"), (26, 34, "PRODUCT")]}),
+    _crear_dato("ofreció 7 botellas de jugo por 21 dólares", [("7 botellas", "QUANTITY"), ("jugo", "PRODUCT"), ("21 dólares", "PRICE")]),
+    _crear_dato("Por 18 dólares vendimos 5 paquetes de galletas", [("18 dólares", "PRICE"), ("5 paquetes", "QUANTITY"), ("galletas", "PRODUCT")]),
     ("12 dólares pagó Marta por 2 cables", {"entities": [(0, 10, "PRICE"), (26, 27, "QUANTITY"), (28, 34, "PRODUCT")]}),
     ("Por 16 dólares, compró Luis 3 carpetas", {"entities": [(4, 14, "PRICE"), (28, 29, "QUANTITY"), (30, 38, "PRODUCT")]}),
     ("vendí tres carpetas por 15 dólares", {"entities": [(6, 10, "QUANTITY"), (11, 19, "PRODUCT"), (24, 34, "PRICE")]}),
@@ -113,6 +113,9 @@ DATOS_COMPLEMENTARIOS = [
     _crear_dato("Limpieza: se cargaron 44 dólares al presupuesto.", [("Limpieza", "CONCEPT"), ("44 dólares", "PRICE")]),
 ]
 train_data.extend(DATOS_COMPLEMENTARIOS)
+
+from datos_ner import generar_datos
+train_data.extend(generar_datos())
 
 
 def validar_train_data(nlp, datos):
@@ -211,7 +214,7 @@ def comprobar_guardado(nlp_entrenado, ruta=MODELO_GUARDADO):
         destino = Path(__file__).resolve().parent / destino
     destino.parent.mkdir(parents=True, exist_ok=True)
     candidato = destino.with_name(f".{destino.name}.candidate-{uuid.uuid4().hex}")
-    respaldo = destino.with_name(f".{destino.name}.previous-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}")
+    respaldo = destino.parent / "respaldos" / f"{destino.name}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}"
     nlp_entrenado.to_disk(candidato)
     with open(candidato / "proyecto_metadata.json", "w", encoding="utf-8") as archivo:
         huella_datos = hashlib.sha256(
@@ -230,9 +233,19 @@ def comprobar_guardado(nlp_entrenado, ruta=MODELO_GUARDADO):
     # Comprueba que el artefacto temporal carga antes de mover el modelo vigente.
     # La comprobación usa también el cargador real consumido por el intérprete.
     from interpretacion import cargar_modelo
-    cargar_modelo(candidato)
+    modelo_verificado = cargar_modelo(candidato)
+    baterias = medir_baterias(modelo_verificado)
+    incompletas = [nombre for nombre, resultado in baterias.items()
+                   if resultado["error"] or resultado["aprobadas"] != resultado["total"]]
+    if incompletas:
+        raise RuntimeError(f"Promoción bloqueada: baterías incompletas {incompletas}. Candidata conservada en {candidato}")
+    metadata_path = candidato / "proyecto_metadata.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    metadata["validacion_baterias"] = baterias
+    metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
     tenia_modelo = destino.exists()
     if tenia_modelo:
+        respaldo.parent.mkdir(parents=True, exist_ok=True)
         destino.rename(respaldo)
     try:
         candidato.rename(destino)
@@ -284,15 +297,20 @@ def main():
     baterias_base = medir_baterias(baseline)
     entrenar_ner(nlp, train_data)
     evaluar_ner(nlp, train_data, "ENTRENAMIENTO (no es generalización)")
-    ruta_candidata_eval = Path(__file__).resolve().parent / f".{MODELO_GUARDADO}.evaluation-{uuid.uuid4().hex}"
+    ruta_candidata_eval = Path(__file__).resolve().parent / "resultados_ner" / "candidata_temporal_actual"
     nlp.to_disk(ruta_candidata_eval)
     try:
         candidata_cargada = cargar_modelo(ruta_candidata_eval)
         metricas_candidatas_desarrollo = medir_ner(candidata_cargada, PRUEBAS_NER_VALIDACION)
         baterias_candidata = medir_baterias(candidata_cargada)
     finally:
-        import shutil
-        shutil.rmtree(ruta_candidata_eval, ignore_errors=True)
+        # Conserva la candidata para diagnosticar fallos sin repetir entrenamiento.
+        print(f"Candidata de evaluación conservada en {ruta_candidata_eval}")
+    informe = {"desarrollo_base": metricas_base_desarrollo,
+               "desarrollo_candidata": metricas_candidatas_desarrollo,
+               "baterias_base": baterias_base, "baterias_candidata": baterias_candidata}
+    (ruta_candidata_eval.parent / "comparacion_actual.json").write_text(
+        json.dumps(informe, ensure_ascii=False, indent=2), encoding="utf-8")
     print("\nComparación desarrollo (micro-F1 y exactitud de frase, baseline -> candidata):", (
         metricas_base_desarrollo["micro_entidad"]["f1"], metricas_base_desarrollo["coincidencia_exacta_de_frase"]["correctas"]
     ), "->", (
@@ -307,12 +325,16 @@ def main():
         if baterias_candidata[nombre]["error"] is not None
         or baterias_candidata[nombre]["aprobadas"] < base["aprobadas"]
     ]
-    if f1_candidata < f1_base or frases_candidata < frases_base or regresiones:
+    incompletas = [nombre for nombre, resultado in baterias_candidata.items()
+                   if resultado["error"] or resultado["aprobadas"] != resultado["total"]]
+    if f1_candidata < f1_base or frases_candidata < frases_base or regresiones or incompletas:
         print("Candidata rechazada; se conserva el modelo vigente.")
         if f1_candidata < f1_base or frases_candidata < frases_base:
             print("Retrocede en desarrollo NER.")
         if regresiones:
             print("Baterías con regresión:", ", ".join(regresiones))
+        if incompletas:
+            print("Baterías todavía incompletas:", ", ".join(incompletas))
         raise SystemExit(1)
     if f1_candidata == f1_base and frases_candidata == frases_base:
         print("Candidata sin mejora en desarrollo; el modelo existente se conserva sin sobrescribirlo.")

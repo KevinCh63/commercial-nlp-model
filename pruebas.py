@@ -1292,6 +1292,29 @@ def evaluar_segmentacion_ner(nlp):
     return aciertos
 
 
+def evaluar_roles_comerciales(nlp):
+    """Regresiones de roles con unidades, cantidades elípticas y gastos."""
+    from interpretacion import interpretar_texto
+    casos = [
+        ("Compré 8", ("8", None, None, None)),
+        ("Vendí 6 por 25 dólares", ("6", None, None, "25 dólares")),
+        ("Compré 7 paquetes", ("7 paquetes", None, None, None)),
+        ("Compré botellas", (None, None, None, None)),
+        ("Gasté 14 dólares en papel", (None, None, "papel", "14 dólares")),
+        ("Compré 3 vasos por 16 dólares", ("3", "vasos", None, "16 dólares")),
+        ("Compré una mochila", ("una", "mochila", None, None)),
+        ("Compré 5 cajas de jabón", ("5 cajas", "jabón", None, None)),
+    ]
+    aciertos = 0
+    for texto, esperado in casos:
+        resultado = interpretar_texto(texto, nlp=nlp)
+        obtenido = tuple(resultado[campo] for campo in ("cantidad", "producto", "concepto", "precio"))
+        correcto = obtenido == esperado
+        aciertos += int(correcto)
+        print(f"[{'OK' if correcto else 'FALLO'}] roles comerciales {texto!r}: {obtenido}")
+    return aciertos
+
+
 def construir_baterias():
     """Devuelve la matriz única de baterías usada por pruebas y promoción."""
     return [
@@ -1312,15 +1335,20 @@ def construir_baterias():
         ("matriz modalidad", lambda modelo: 10 - evaluar_matriz_modalidad(modelo), 10),
         ("relaciones/evidencia", lambda modelo: 8 - evaluar_relaciones_evidencia(modelo), 8),
         ("segmentación NER segura", evaluar_segmentacion_ner, 4),
+        ("roles comerciales", evaluar_roles_comerciales, 8),
     ]
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Evalúa el modelo vigente o una candidata sin promoverla.")
+    parser.add_argument("--modelo", default="custom_ner_model", help="Nombre o ruta del modelo spaCy")
+    argumentos = parser.parse_args()
     baterias = construir_baterias()
     total = sum(total for _, _, total in baterias)
     from interpretacion import cargar_modelo
     try:
-        nlp = cargar_modelo()
+        nlp = cargar_modelo(argumentos.modelo)
     except (RuntimeError, OSError) as exc:
         print(f"[EXCEPCIÓN] carga del modelo: {type(exc).__name__}: {exc}")
         print(f"\nTOTAL FINAL: {total} | aprobaciones=0 | fallos=0 | no ejecutadas={total} | errores de ejecución=1")

@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any
 
 import spacy
+from monetario import buscar_importes, normalizar_importe, moneda_de
+from revision import anotar_revision
 
 MODELO_ENTRENADO = "custom_ner_model"
 MODELO_BASE = "es_core_news_md"
@@ -41,8 +43,9 @@ _nlp = None
 _nlp_ruta = None
 _NUMERO = r"(?:\d+(?:[.,]\d+)?|un(?:a|o)?|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|varios|varias)"
 _MONEDAS = r"(?:d[oó]lar(?:es)?|usd|euro(?:s)?|eur|peso(?:s)?|\$)"
-_UNIDADES = r"(?:botellas?|cajas?|paquetes?|bolsas?|latas?|vasos?|unidades?|libras?|kilos?|kilogramos?|gramos?|metros?|litros?)"
+_UNIDADES = r"(?:botellas?|cajas?|paquetes?|bolsas?|latas?|vasos?|unidades?|libras?|kilos?|kilogramos?|gramos?|metros?|litros?|cartones?|sacos?|bidones?|frascos?|docenas?|rollos?|baldes?|kg)"
 _UNIDADES_PRODUCTO = {"vaso", "vasos"}
+_UNIDADES_AISLADAS = r"(?:botellas?|cajas?|paquetes?|bolsas?|latas?|unidades?|libras?|kilos?|kilogramos?|gramos?|metros?|litros?|cartones?)"
 _MONEDAS_NUMERO = r"(?:d[oó]lar(?:es)?|usd|euro(?:s)?|eur|peso(?:s)?)"
 _PRODUCTOS_GENERICOS = {"producto", "productos", "artículo", "artículos", "articulo", "articulos", "mercadería", "mercaderia", "mercancía", "mercancia", "artículos varios", "articulos varios"}
 _REFERENCIAS_GENERICAS = {"algo", "nada", "cosa", "cosas", "alguna cosa", "algunas cosas"}
@@ -263,7 +266,10 @@ def _entidades_comerciales(doc, entidades, accion):
         if token_final is not None and token_final.pos_ in {"ADP", "CCONJ", "DET", "PRON", "PUNCT"}:
             # Correct an overlong NER quantity span while retaining the original entity in `entidades`.
             roles["cantidad"] = cantidad_simple.group("numero")
-    if roles.get("precio") and not re.fullmatch(rf"{_NUMERO}(?:\s+{_MONEDAS})?", roles["precio"], re.IGNORECASE):
+    if roles.get("precio") and not (
+        re.fullmatch(rf"{_NUMERO}", roles["precio"], re.IGNORECASE)
+        or any(m["texto"] == roles["precio"] for m in buscar_importes(roles["precio"]))
+    ):
         roles.pop("precio", None)
     if (roles.get("cantidad") or "").casefold() in {"la", "las", "el", "los", "esa", "esta", "aquella", "dicha", "primera", "segunda", "tercera"}:
         roles.pop("cantidad", None)
@@ -317,7 +323,12 @@ def _entidades_comerciales(doc, entidades, accion):
         texto, re.IGNORECASE,
     )
     if patron:
-        roles["cantidad"], roles["producto"] = patron.group("cantidad"), patron.group("producto").strip()
+        producto_regla = patron.group("producto").strip()
+        # Conserva el span completo cuando la regla solo encontró su prefijo.
+        producto_ner = next((e["texto"] for e in entidades if e["etiqueta"] == "PRODUCT"
+                             and e["inicio"] == patron.start("producto")
+                             and e["texto"].casefold().startswith(producto_regla.casefold())), None)
+        roles["cantidad"], roles["producto"] = patron.group("cantidad"), producto_ner or producto_regla
     else:
         con_unidad = re.search(rf"(?P<cantidad>{_NUMERO})\s+(?P<unidad>{_UNIDADES})\b", texto, re.IGNORECASE)
         if con_unidad and not deuda:
@@ -340,10 +351,11 @@ def _entidades_comerciales(doc, entidades, accion):
                 # Keep NER entities untouched; this filter only guards the fallback rule.
                 if token is not None and token.pos_ in {"NOUN", "PROPN", "ADJ"}:
                     roles["cantidad"], roles["producto"] = simple.group("cantidad"), candidato
-    importes = list(re.finditer(rf"(?P<importe>{_NUMERO}\s+{_MONEDAS})", texto, re.IGNORECASE))
+    importes = buscar_importes(texto)
     if importes:
-        # Prefer a complete numeric-currency span over a malformed partial NER PRICE span.
-        roles["precio"] = importes[-1].group("importe").strip()
+        # Los límites y el signo forman parte del importe; nunca se extrae
+        # una subcadena numérica de un importe más largo.
+        roles["precio"] = next((m["texto"] for m in importes if m["texto"] == roles.get("precio")), importes[0]["texto"])
     elif "precio" not in roles and not re.search(r"\bimporte\s+desconocido\b", texto, re.IGNORECASE):
             importe_suelto = re.search(rf"\b(?:por|a)\s+(?P<importe>{_NUMERO})\b", texto, re.IGNORECASE)
             if importe_suelto:
@@ -363,20 +375,39 @@ def _entidades_comerciales(doc, entidades, accion):
         if contraparte:
             roles["contraparte"] = contraparte.group(1)
             roles.pop("concepto", None)
+    # Una unidad sin contenido no identifica un artículo de inventario.
+    if re.fullmatch(_UNIDADES_AISLADAS, roles.get("producto") or "", re.IGNORECASE):
+        roles.pop("producto", None)
+    # El objeto del gasto ocupa el rol de concepto, incluso si el NER lo
+    # reconoce como un artículo por haberlo visto en contextos de compraventa.
+    if accion == "gastar" and roles.get("producto") == roles.get("concepto"):
+        roles.pop("producto", None)
+    if accion in {"comprar", "vender"}:
+        if not roles.get("cantidad") and roles.get("producto"):
+            cantidad_producto = re.search(
+                rf"\b(?P<cantidad>{_NUMERO})\s+{re.escape(roles['producto'])}(?=\W|$)",
+                texto, re.IGNORECASE,
+            )
+            if cantidad_producto:
+                roles["cantidad"] = cantidad_producto.group("cantidad")
+        for token in doc:
+            if normalizar_accion(token) != accion:
+                continue
+            cantidad_eliptica = re.match(
+                rf"\s+(?P<cantidad>{_NUMERO})(?=\s*$|\s+(?:por|a)\b)",
+                texto[token.idx + len(token.text):], re.IGNORECASE,
+            )
+            if cantidad_eliptica:
+                cantidad = cantidad_eliptica.group("cantidad")
+                roles["cantidad"] = cantidad
+                if roles.get("precio") == cantidad:
+                    roles.pop("precio", None)
+                break
     return roles
 
 
 def _moneda(precio):
-    if not precio:
-        return None
-    moneda = re.search(_MONEDAS, precio, re.IGNORECASE)
-    if not moneda:
-        return None
-    token = moneda.group(0).casefold()
-    if token in {"usd", "dólar", "dólares", "dolar", "dolares", "$"}: return "USD"
-    if token in {"euro", "euros", "eur"}: return "EUR"
-    if token in {"peso", "pesos"}: return "PESO"
-    return None
+    return moneda_de(precio)
 
 
 def validar_resultado(resultado: dict[str, Any]):
@@ -413,6 +444,24 @@ def validar_resultado(resultado: dict[str, Any]):
     if resultado.get("modalidad") == "INCIERTA":
         resultado["estado"] = "AMBIGUO"
         resultado["advertencias"].append("El texto expresa incertidumbre sobre la operación.")
+    resultado["importe"] = normalizar_importe(resultado.get("precio"))
+    criticos = set(resultado["importe"]["motivos"]) - {"MONEDA_NO_DETERMINADA", "MONEDA_PESO_NO_ESPECIFICA"}
+    if resultado.get("precio") and re.search(r"\b(?:soles?|GBP|libras\s+esterlinas)\b", texto, re.IGNORECASE):
+        criticos.add("MONEDA_NO_ADMITIDA")
+    if len(buscar_importes(texto)) > 1:
+        criticos.add("VARIOS_IMPORTES_EN_OPERACION")
+    # Conserva la mención completa sin inventar líneas ni distribuir el total.
+    if accion in {"comprar", "vender"}:
+        objetos = re.search(r"\b(?:compr\w*|vend\w*|adquir\w*)\s+(?P<productos>[^,;]+?\s+y\s+[^,;]+?)(?=\s+por\b|\s+a\s+\d|$)", texto, re.IGNORECASE)
+        if objetos:
+            resultado["productos_mencionados"] = {
+                "texto": objetos.group("productos"), "inicio": objetos.start("productos"), "fin": objetos.end("productos"),
+            }
+            criticos.add("VARIOS_PRODUCTOS_SIN_DESGLOSE")
+    resultado["incidencias"] = sorted(criticos)
+    if criticos:
+        resultado["estado"] = "AMBIGUO"
+        resultado["advertencias"].extend(sorted(criticos))
     return resultado
 
 
@@ -455,6 +504,13 @@ def interpretar_texto(
 def _proyectar_entidades_segmento(doc_completo, segmento, doc_segmento):
     """Recupera spans completos solo con ancla local y registra conflictos."""
     entidades_locales = extraer_entidades(doc_segmento)
+    # Una unidad sin cantidad ni contenido no respalda una interpretación
+    # comercial y no debe habilitar proyecciones desde la oración completa.
+    anclas_locales = [entidad for entidad in entidades_locales if not (
+        entidad["etiqueta"] == "PRODUCT"
+        and re.fullmatch(_UNIDADES_AISLADAS, entidad["texto"], re.IGNORECASE)
+        and entidad["texto"].casefold() not in _UNIDADES_PRODUCTO
+    )]
     seleccionadas = list(doc_segmento.ents)
     diagnosticos = []
     for entidad in doc_completo.ents:
@@ -483,10 +539,10 @@ def _proyectar_entidades_segmento(doc_completo, segmento, doc_segmento):
                 "resolucion": "sin_proyeccion; se conserva la inferencia local",
             })
             continue
-        if not entidades_locales:
+        if not anclas_locales:
             diagnosticos.append({
                 "tipo": "proyeccion_sin_ancla_local", "span": registro,
-                "resolucion": "proyeccion_omitida; el segmento no tiene otra entidad local",
+                "resolucion": "proyeccion_omitida; el segmento no tiene otra entidad local interpretable",
             })
             continue
         solapados = [
@@ -592,18 +648,18 @@ def interpretar_operaciones(texto: str, nlp=None):
 
 def interpretar_operaciones_con_relaciones(texto: str, nlp=None):
     if not isinstance(texto, str):
-        return {
+        return anotar_revision({
             "texto": None, "estado": "NO_RECONOCIDO", "operaciones": [], "relaciones": [],
             "diagnosticos_ner": [], "advertencias": ["La entrada debe ser una cadena de texto."], "ambiguedades": [],
-        }
+        })
     if not texto.strip():
-        return {
+        return anotar_revision({
             "texto": texto if isinstance(texto, str) else None,
             "estado": "NO_RECONOCIDO", "operaciones": [], "relaciones": [],
             "diagnosticos_ner": [],
             "advertencias": ["No hay texto suficiente para interpretar."],
             "ambiguedades": [],
-        }
+        })
     operaciones, diagnosticos_ner = _interpretar_operaciones_detalle(texto, nlp=nlp)
     etiquetas_campo = {
         "cantidad": {"QUANTITY"}, "producto": {"PRODUCT"},
@@ -685,7 +741,7 @@ def interpretar_operaciones_con_relaciones(texto: str, nlp=None):
             if campo == "cantidad" and isinstance(valor, str) and valor.casefold() in _CUANTIFICADORES_VAGOS:
                 campos[campo]["estado"] = "AMBIGUO"
         operacion["campos"] = campos
-        if any(meta["estado"] == "AMBIGUO" for meta in campos.values()):
+        if operacion.get("incidencias") or any(meta["estado"] == "AMBIGUO" for meta in campos.values()):
             operacion["estado"] = "AMBIGUO"
         elif campos["producto"].get("valor") is not None and campos["producto"].get("interpretacion") == "GENERICA":
             operacion["estado"] = "PARCIAL"
@@ -698,6 +754,9 @@ def interpretar_operaciones_con_relaciones(texto: str, nlp=None):
             operacion["estado"] = "PARCIAL"
         elif operacion.get("modalidad") == "INCIERTA":
             operacion["estado"] = "AMBIGUO"
+        if operacion.get("productos_mencionados"):
+            for extremo in ("inicio", "fin"):
+                operacion["productos_mencionados"][extremo] += operacion.get("_offset_base", 0)
         operacion.pop("_offset_base", None)
     relaciones = []
     referencias = re.compile(
@@ -817,7 +876,7 @@ def interpretar_operaciones_con_relaciones(texto: str, nlp=None):
         advertencias.append("Hay referencias entre operaciones cuyo destino permanece ambiguo.")
     if not operaciones and texto.strip():
         advertencias.append("No se reconoció una acción comercial que pueda convertirse en operación.")
-    return {
+    return anotar_revision({
         "texto": texto,
         "estado": estado_general,
         "operaciones": operaciones,
@@ -825,7 +884,7 @@ def interpretar_operaciones_con_relaciones(texto: str, nlp=None):
         "diagnosticos_ner": diagnosticos_ner,
         "advertencias": list(dict.fromkeys(advertencias)),
         "ambiguedades": ambiguedades,
-    }
+    })
 
 
 def resultado_semantico(resultado):

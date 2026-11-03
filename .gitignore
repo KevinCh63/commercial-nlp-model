@@ -226,3 +226,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Respaldo local del modelo anterior
+respaldos/
