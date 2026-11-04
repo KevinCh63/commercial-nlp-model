@@ -13,7 +13,7 @@ import spacy
 from spacy.training.example import Example
 from spacy.util import fix_random_seed, minibatch
 
-from pruebas import PRUEBAS_NER_VALIDACION, evaluar_ner, medir_ner
+from tests.evaluacion import PRUEBAS_NER_VALIDACION, evaluar_ner, medir_ner
 
 MODELO_BASE = "es_core_news_md"
 MODELO_GUARDADO = "custom_ner_model"
@@ -114,7 +114,7 @@ DATOS_COMPLEMENTARIOS = [
 ]
 train_data.extend(DATOS_COMPLEMENTARIOS)
 
-from datos_ner import generar_datos
+from .datos_ner import generar_datos
 train_data.extend(generar_datos())
 
 
@@ -211,7 +211,7 @@ def entrenar_ner(nlp, datos):
 def comprobar_guardado(nlp_entrenado, ruta=MODELO_GUARDADO):
     destino = Path(ruta)
     if not destino.is_absolute():
-        destino = Path(__file__).resolve().parent / destino
+        destino = Path(__file__).resolve().parent.parent / destino
     destino.parent.mkdir(parents=True, exist_ok=True)
     candidato = destino.with_name(f".{destino.name}.candidate-{uuid.uuid4().hex}")
     respaldo = destino.parent / "respaldos" / f"{destino.name}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}"
@@ -263,13 +263,13 @@ def comprobar_guardado(nlp_entrenado, ruta=MODELO_GUARDADO):
 
 
 def medir_baterias(nlp):
-    """Mide cada batería histórica con la misma matriz que `pruebas.py`."""
-    from pruebas import construir_baterias
+    """Mide cada batería histórica con la misma matriz que `tests/evaluacion.py`."""
+    from tests.evaluacion import construir_baterias
 
     resultados = {}
     for nombre, ejecutar, total in construir_baterias():
         try:
-            # Las baterías ya detallan sus fallos en pruebas.py; aquí interesa
+            # Las baterías ya detallan sus fallos en tests/evaluacion.py; aquí interesa
             # comparar el resultado por grupo sin duplicar toda esa salida.
             with contextlib.redirect_stdout(io.StringIO()):
                 aprobadas = ejecutar(nlp)
@@ -290,14 +290,14 @@ def main():
     if exactos or cercanos:
         raise ValueError(f"El conjunto de desarrollo se solapa con entrenamiento: exactos={len(exactos)}, cercanos={len(cercanos)}")
     print(f"Datos validados: {len(train_data)} entrenamiento, {len(PRUEBAS_NER_VALIDACION)} desarrollo | pipes base = {nlp.pipe_names}\n")
-    ruta_existente = Path(__file__).resolve().parent / MODELO_GUARDADO
+    ruta_existente = Path(__file__).resolve().parent.parent / MODELO_GUARDADO
     from interpretacion import cargar_modelo
     baseline = cargar_modelo(ruta_existente) if ruta_existente.exists() else spacy.load(MODELO_BASE)
     metricas_base_desarrollo = medir_ner(baseline, PRUEBAS_NER_VALIDACION)
     baterias_base = medir_baterias(baseline)
     entrenar_ner(nlp, train_data)
     evaluar_ner(nlp, train_data, "ENTRENAMIENTO (no es generalización)")
-    ruta_candidata_eval = Path(__file__).resolve().parent / "resultados_ner" / "candidata_temporal_actual"
+    ruta_candidata_eval = Path(__file__).resolve().parent.parent / "resultados_ner" / "candidata_temporal_actual"
     nlp.to_disk(ruta_candidata_eval)
     try:
         candidata_cargada = cargar_modelo(ruta_candidata_eval)

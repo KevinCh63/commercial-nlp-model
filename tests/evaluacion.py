@@ -434,7 +434,7 @@ def medir_ner(nlp, pruebas):
 
 def evaluar_validacion_datos(nlp):
     """Prueba el validador de anotaciones y la detección de fuga textual."""
-    from entrenamiento import auditar_solapamiento, train_data, validar_train_data
+    from entrenamiento.entrenamiento import auditar_solapamiento, train_data, validar_train_data
 
     casos_invalidos = [
         ("etiqueta", [("Caja", {"entities": [(0, 4, "MONEY")]})], "etiqueta"),
@@ -1151,7 +1151,7 @@ def evaluar_interfaz_independiente(nlp):
 
     casos = []
     try:
-        ruta_inexistente = Path(__file__).resolve().parent / "__modelo_ausente_para_regresion__"
+        ruta_inexistente = Path(__file__).resolve().parent.parent / "__modelo_ausente_para_regresion__"
         try:
             cargar_modelo(ruta_inexistente)
             casos.append(("modelo ausente", False, "se cargó sin existir"))
@@ -1159,7 +1159,7 @@ def evaluar_interfaz_independiente(nlp):
             casos.append(("modelo ausente", "No se encontró" in str(exc) or "No se pudo" in str(exc), str(exc)))
 
         modelo_base = cargar_modelo(MODELO_BASE)
-        modelo_custom = cargar_modelo(Path(__file__).resolve().parent / MODELO_ENTRENADO)
+        modelo_custom = cargar_modelo(Path(__file__).resolve().parent.parent / MODELO_ENTRENADO)
         casos.append(("cache por ruta", modelo_base is not modelo_custom and "ner" in modelo_custom.pipe_names, f"base={modelo_base.meta.get('name')}, custom labels={len(modelo_custom.get_pipe('ner').labels)}"))
 
         vacio = interpretar_operaciones_con_relaciones("", nlp=nlp)

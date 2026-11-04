@@ -74,7 +74,7 @@ def cargar_modelo(ruta: str = MODELO_ENTRENADO):
         modelo = spacy.load(str(objetivo))
     except (OSError, ValueError, ImportError) as exc:
         if nombre == MODELO_ENTRENADO:
-            detalle = f"No se encontró o no se pudo abrir el modelo personalizado {str(objetivo)!r}. Entrénelo con `python entrenamiento.py` o indique una ruta válida."
+            detalle = f"No se encontró o no se pudo abrir el modelo personalizado {str(objetivo)!r}. Entrénelo con `python -m entrenamiento` o indique una ruta válida."
         else:
             detalle = f"No se pudo cargar el modelo {str(objetivo)!r}. Verifique que esté instalado y que sea compatible con spaCy {spacy.__version__}."
         raise RuntimeError(detalle) from exc

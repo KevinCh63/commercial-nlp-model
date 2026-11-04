@@ -1,0 +1,111 @@
+{
+  "fecha_entrenamiento_utc": "2026-11-03T21:52:31.703267+00:00",
+  "modelo_base": "es_core_news_md",
+  "epocas": 100,
+  "dropout": 0.3,
+  "semilla": 42,
+  "entidades": [
+    "CONCEPT",
+    "LOC",
+    "MISC",
+    "ORG",
+    "PER",
+    "PRICE",
+    "PRODUCT",
+    "QUANTITY"
+  ],
+  "cantidad_datos_entrenamiento": 641,
+  "huella_datos_entrenamiento": "de9b938dfa0bc68a86dfd4fb755dc639e0d3ae00af9f7694f30f3e8fba506fa3",
+  "validacion_baterias": {
+    "NER": {
+      "aprobadas": 27,
+      "total": 27,
+      "error": null
+    },
+    "NER independiente": {
+      "aprobadas": 15,
+      "total": 15,
+      "error": null
+    },
+    "validación de datos": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "interfaz independiente": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "entidades": {
+      "aprobadas": 5,
+      "total": 5,
+      "error": null
+    },
+    "semántica": {
+      "aprobadas": 29,
+      "total": 29,
+      "error": null
+    },
+    "operaciones múltiples": {
+      "aprobadas": 12,
+      "total": 12,
+      "error": null
+    },
+    "relaciones": {
+      "aprobadas": 7,
+      "total": 7,
+      "error": null
+    },
+    "contrato": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "adversarial": {
+      "aprobadas": 22,
+      "total": 22,
+      "error": null
+    },
+    "fase 2": {
+      "aprobadas": 11,
+      "total": 11,
+      "error": null
+    },
+    "fase 4": {
+      "aprobadas": 17,
+      "total": 17,
+      "error": null
+    },
+    "endurecimiento": {
+      "aprobadas": 37,
+      "total": 37,
+      "error": null
+    },
+    "admisión": {
+      "aprobadas": 26,
+      "total": 26,
+      "error": null
+    },
+    "matriz modalidad": {
+      "aprobadas": 10,
+      "total": 10,
+      "error": null
+    },
+    "relaciones/evidencia": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    },
+    "segmentación NER segura": {
+      "aprobadas": 4,
+      "total": 4,
+      "error": null
+    },
+    "roles comerciales": {
+      "aprobadas": 8,
+      "total": 8,
+      "error": null
+    }
+  }
+}

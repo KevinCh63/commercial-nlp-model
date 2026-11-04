@@ -66,7 +66,7 @@ py -3.14 -m venv venv
 .\venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-El modelo personalizado se carga desde `custom_ner_model/`. Esta carpeta se conserva localmente y no se versiona en Git; instalar las dependencias no la genera. Si no está disponible, debe regenerarse mediante el proceso de entrenamiento descrito más adelante.
+El modelo personalizado se carga desde `custom_ner_model/`. Esta carpeta está incluida en el repositorio para permitir la ejecución tras instalar las dependencias. Los informes, modelos candidatos y respaldos se generan localmente y quedan excluidos de Git.
 
 ## Uso
 
@@ -92,7 +92,7 @@ La ubicación del modelo puede configurarse con `ComponenteInterprete(ruta_model
 ## Entrenamiento del modelo
 
 ```powershell
-.\venv\Scripts\python.exe entrenamiento.py
+.\venv\Scripts\python.exe -m entrenamiento
 ```
 
 El entrenamiento utiliza el modelo base y los ejemplos anotados para generar una candidata del NER personalizado. Valida las anotaciones, compara resultados y condiciona la promoción de la candidata a las verificaciones establecidas. Una candidata puede ser rechazada; los modelos reemplazados se conservan en `respaldos/`.
@@ -102,14 +102,12 @@ El entrenamiento es un proceso separado de la interpretación. Ejecutar el inté
 ## Evaluación
 
 ```powershell
-.\venv\Scripts\python.exe pruebas.py
+.\venv\Scripts\python.exe -m tests.evaluacion
 .\venv\Scripts\python.exe -m unittest discover -s tests -v
 .\venv\Scripts\python.exe -m herramientas.evaluar_producto
 ```
 
 Las evaluaciones cubren reconocimiento de entidades, interpretación semántica, modalidad, relaciones, importes, evidencias y estructura de la salida. Los informes se conservan en `resultados_ner/`.
-
-La auditoría documentada reporta 262/262 comprobaciones históricas, 13 métodos de prueba del componente y 25/25 casos exploratorios con requisitos verificables. Estas cifras corresponden a esas baterías y no representan una garantía de exactitud ante cualquier entrada. La evaluación de desarrollo del NER conserva dos errores históricos y se analiza por separado de las reglas de interpretación.
 
 ## Organización del proyecto
 
@@ -120,9 +118,9 @@ La auditoría documentada reporta 262/262 comprobaciones históricas, 13 método
 | `monetario.py` | Detección y normalización de importes y monedas. |
 | `revision.py` | Criterios y motivos de revisión. |
 | `contrato.py` | Modelos de datos y validación de la propuesta. |
-| `entrenamiento.py` | Entrenamiento, evaluación y promoción de candidatas. |
-| `datos_ner.py` | Generación de ejemplos complementarios anotados. |
-| `pruebas.py`, `tests/` y `herramientas/` | Baterías automatizadas y utilidades de evaluación. |
+| `entrenamiento/entrenamiento.py` | Entrenamiento, evaluación y promoción de candidatas. |
+| `entrenamiento/datos_ner.py` | Generación de ejemplos complementarios anotados. |
+| `tests/` y `herramientas/` | Baterías automatizadas y utilidades de evaluación. |
 
 ## Alcance y limitaciones
 
@@ -136,5 +134,5 @@ La auditoría documentada reporta 262/262 comprobaciones históricas, 13 método
 ## Documentación complementaria
 
 - [`docs/arquitectura.md`](docs/arquitectura.md): estructura interna y flujo de ejecución.
-- [`docs/auditoria.md`](docs/auditoria.md): hallazgos, correcciones y límites de las verificaciones.
-- [`docs/limpieza.json`](docs/limpieza.json): inventario de rutas obsoletas retiradas.
+
+El modelo incluido deriva de `es_core_news_md` de Explosion. Su licencia y los avisos de sus fuentes se conservan en `custom_ner_model/LICENSE` y `custom_ner_model/LICENSES_SOURCES`. El código y los datos de entrenamiento personalizados están disponibles en `entrenamiento/`.
